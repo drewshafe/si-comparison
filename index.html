@@ -618,10 +618,11 @@ function calcM1() {
 
   // Returns offset
   let retOffset = 0, retBurden = 0;
+  let retP = 0;
   let totRet = 0, retLabTot = 0, retPlatTot = 0, siCovLab = 0, siCovPlat = 0;
   let siPlatCovP = 1;
   if (_retEnabled) {
-    const retP    = vn('returnsRate') / 100;
+    retP          = vn('returnsRate') / 100;
     const platMo  = vn('retPlatform');
     const labCost = ship;  // return label cost = avg shipping
     const platPer = platMo * mul;
@@ -707,7 +708,8 @@ function calcM1() {
     diyClaimCostPer, siFundedPer, diyAvgP, diyAttP, diyProt, diyPremsIn, diyProtCl, diyClCost, diyNet,
     siAvgP, siAttP, siProt, siPremsIn, siProtCl, siFunded, postClaim, siRevSh, siNet, rsP,
     attachLift, advantage,
-    retEnabled:_retEnabled, totRet, retLabTot, retPlatTot, retBurden, siCovLab, siCovPlat, retOffset,
+    retEnabled:_retEnabled, retP, totRet, retLabTot, retPlatTot, retBurden,
+    siCovLab, siCovPlat, retOffset, siPlatCovP,
     ready:true
   };
 }
@@ -763,25 +765,24 @@ function calcM2() {
   let siRetOff = 0, compRetOff = 0;
   let totRet = 0, siCovLab = 0, siCovPlat = 0, compCovLab = 0, compCovPlat = 0;
   let siPlatCovP = 1, compPlatCovP = 0;
+  let siPlatPer = 0, compPlatPer = 0;
   const retP = vn('returnsRate') / 100;
   if (_retEnabled || _cretEnabled) {
     totRet = orders * retP;
   }
   if (_retEnabled) {
-    const platMo  = vn('retPlatform');
-    const platPer = platMo * mul;
-    siPlatCovP    = vn('siPlatCov') / 100;   // % AfterShip cost that SI covers
-    siCovLab  = (siProt * retP) * ship;
-    siCovPlat = platPer * siPlatCovP;
-    siRetOff  = siCovLab + siCovPlat;
+    siPlatPer  = vn('retPlatform') * mul;
+    siPlatCovP = vn('siPlatCov') / 100;   // % AfterShip cost that SI covers
+    siCovLab   = (siProt * retP) * ship;
+    siCovPlat  = siPlatPer * siPlatCovP;
+    siRetOff   = siCovLab + siCovPlat;
   }
   if (_cretEnabled) {
-    const cplatMo  = vn('compRetPlatform');
-    const cplatPer = cplatMo * mul;
-    compPlatCovP   = vn('compPlatCov') / 100; // % platform cost the competitor covers
-    compCovLab  = (compProt * retP) * ship;
-    compCovPlat = cplatPer * compPlatCovP;
-    compRetOff  = compCovLab + compCovPlat;
+    compPlatPer  = vn('compRetPlatform') * mul;
+    compPlatCovP = vn('compPlatCov') / 100; // % platform cost the competitor covers
+    compCovLab   = (compProt * retP) * ship;
+    compCovPlat  = compPlatPer * compPlatCovP;
+    compRetOff   = compCovLab + compCovPlat;
   }
 
   const advantage = (siNet + siRetOff) - (compNet + compRetOff);
@@ -865,7 +866,9 @@ function calcM2() {
     compAvgP, compAttP, compProt, compPremsIn, compProtCl, compFunded, compPost, compRevSh, compNet, compRsP,
     siAvgP, siAttP, siProt, siPremsIn, siProtCl, siFunded, siPost, siRevSh, siNet, siRsP,
     advantage, retEnabled:_retEnabled, cretEnabled:_cretEnabled,
-    totRet, siCovLab, siCovPlat, siRetOff, compCovLab, compCovPlat, compRetOff,
+    retP, totRet,
+    siCovLab, siCovPlat, siRetOff, siPlatCovP, siPlatPer,
+    compCovLab, compCovPlat, compRetOff, compPlatCovP, compPlatPer,
     ready:true
   };
 }
@@ -905,9 +908,10 @@ function renderBd() {
       r('Claims Cost',       `${fn(_bd.diyProtCl)} × ${fc(_bd.diyClaimCostPer)}`,       fc(_bd.diyClCost)) +
       r('Net Premium',       'Premiums − Claims',                                        fc(_bd.diyNet)) +
       (_bd.retEnabled
-        ? r('— Returns —',    '',                                                         '') +
-          r('Return Labels',  `All returns (${fn(_bd.totRet)}) × Ship`,                  fc(_bd.retLabTot)) +
-          r('Platform',       'Full platform cost borne by merchant',                     fc(_bd.retPlatTot)) +
+        ? r('— Returns (Self-Managed) —', '',                                             '') +
+          r('Total Returns',  `${fn(_bd.orders)} × ${fpx(_bd.retP * 100)}`,              fn(_bd.totRet)) +
+          r('Return Labels',  `${fn(_bd.totRet)} × ${fc(_bd.ship)} (avg ship)`,          fc(_bd.retLabTot)) +
+          r('Platform Cost',  'Full AfterShip cost — no coverage',                       fc(_bd.retPlatTot)) +
           r('Returns Burden', 'Labels + Platform',                                        fc(_bd.retBurden)) +
           r('Program Total',  'Net Premium − Returns Burden',                             fc(_bd.diyNet - _bd.retBurden))
         : '');
@@ -923,11 +927,12 @@ function renderBd() {
       r('Rev Share',         `max(0, PostClaim) × ${fpx(_bd.rsP * 100)}`,               fc(_bd.siRevSh)) +
       r('Net Premiums',      'PostClaim + RevShare',                                     fc(_bd.siNet)) +
       (_bd.retEnabled
-        ? r('— Returns —',     '',                                                        '') +
-          r('Label Coverage',  `SI Protected (${fn(_bd.siProt)}) × RetRate × Ship`,      fc(_bd.siCovLab)) +
-          r('Platform Coverage','Full platform fee covered',                              fc(_bd.siCovPlat)) +
-          r('Returns Offset',  'Label + Platform',                                        fc(_bd.retOffset)) +
-          r('Program Total',   'Net Premiums + Returns Offset',                           fc(_bd.siNet + _bd.retOffset))
+        ? r('— Returns (SI Covers) —', '',                                                '') +
+          r('Total Returns',     `${fn(_bd.orders)} × ${fpx(_bd.retP * 100)}`,           fn(_bd.totRet)) +
+          r('Label Coverage',    `SI Protected (${fn(_bd.siProt)}) × RetRate × Ship`,    fc(_bd.siCovLab)) +
+          r('AfterShip Platform',`${fc(_bd.retPlatTot)} × ${fpx(_bd.siPlatCovP*100)} covered`, fc(_bd.siCovPlat)) +
+          r('Returns Offset',    'Label + Platform',                                      fc(_bd.retOffset)) +
+          r('Program Total',     'Net Premiums + Returns Offset',                         fc(_bd.siNet + _bd.retOffset))
         : '');
 
   } else {
@@ -946,7 +951,15 @@ function renderBd() {
       r('Protected Claims',  '',                                                          fn(_bd.compProtCl)) +
       r('Funded Claims',     `${fn(_bd.compProtCl)} × ${fc(_bd.fundedPer)}`,             fc(_bd.compFunded)) +
       r('Net Premium',       'Premiums − Funded',                                        fc(_bd.compPost)) +
-      r('Rev Share',         `max(0,Post) × ${fpx(_bd.compRsP * 100)}`,                 fc(_bd.compRevSh));
+      r('Rev Share',         `max(0,Post) × ${fpx(_bd.compRsP * 100)}`,                 fc(_bd.compRevSh)) +
+      (_bd.cretEnabled
+        ? r('— Returns (Comp Covers) —', '',                                             '') +
+          r('Total Returns',   `${fn(_bd.orders)} × ${fpx(_bd.retP * 100)}`,            fn(_bd.totRet)) +
+          r('Label Coverage',  `Comp Protected (${fn(_bd.compProt)}) × RetRate × Ship`, fc(_bd.compCovLab)) +
+          r('Platform Coverage',`${fc(_bd.compPlatPer)} × ${fpx(_bd.compPlatCovP*100)} covered`, fc(_bd.compCovPlat)) +
+          r('Returns Offset',  'Label + Platform',                                       fc(_bd.compRetOff)) +
+          r('Program Total',   'Net + Returns Offset',                                   fc(_bd.compNet + _bd.compRetOff))
+        : '');
 
     el('bdRightTitle').textContent = 'ShipInsure Program';
     el('bdRight').innerHTML =
@@ -956,7 +969,15 @@ function renderBd() {
       r('Protected Claims',  '',                                                          fn(_bd.siProtCl)) +
       r('SI Funded Claims',  `${fn(_bd.siProtCl)} × ${fc(_bd.fundedPer)}`,              fc(_bd.siFunded)) +
       r('Net Premiums',      'Premiums − Funded',                                        fc(_bd.siPost)) +
-      r('Rev Share',         `max(0,Post) × ${fpx(_bd.siRsP * 100)}`,                   fc(_bd.siRevSh));
+      r('Rev Share',         `max(0,Post) × ${fpx(_bd.siRsP * 100)}`,                   fc(_bd.siRevSh)) +
+      (_bd.retEnabled
+        ? r('— Returns (SI Covers) —', '',                                               '') +
+          r('Total Returns',    `${fn(_bd.orders)} × ${fpx(_bd.retP * 100)}`,           fn(_bd.totRet)) +
+          r('Label Coverage',   `SI Protected (${fn(_bd.siProt)}) × RetRate × Ship`,    fc(_bd.siCovLab)) +
+          r('AfterShip Platform',`${fc(_bd.siPlatPer)} × ${fpx(_bd.siPlatCovP*100)} covered`, fc(_bd.siCovPlat)) +
+          r('Returns Offset',   'Label + Platform',                                      fc(_bd.siRetOff)) +
+          r('Program Total',    'Net + Returns Offset',                                  fc(_bd.siNet + _bd.siRetOff))
+        : '');
   }
 }
 
