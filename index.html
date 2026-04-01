@@ -116,6 +116,11 @@ body {
 .cm-val { font-weight:600; color:#212529; }
 .cm-val.pos { color:#198754; }
 .cm-val.neg { color:#dc3545; }
+.cm-section {
+  padding:6px 0 2px; font-size:0.68em; font-weight:700;
+  color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;
+  border-top:1px solid #dee2e6; margin-top:4px; display:block;
+}
 
 /* ── Inputs strip ── */
 .inputs-strip {
@@ -483,6 +488,9 @@ function om(lbl, val, cls, siVal, refVal) {
 function mi(lbl, val, cls) {
   return `<div class="card-metric"><span class="cm-lbl">${lbl}</span><span class="cm-val${cls ? ' '+cls : ''}">${val}</span></div>`;
 }
+function ms(lbl) {
+  return `<span class="cm-section">${lbl}</span>`;
+}
 
 // ── Main recalculate ──
 function recalc() {
@@ -579,28 +587,44 @@ function calcM1() {
   }
 
   // Left card: DIY
+  const diyTotalFull = _retEnabled ? diyNet - retBurden : diyNet;
   el('lcLabel').textContent = 'Self-Insure Program';
   el('lcLabel').className   = 'card-prog-label c-diy';
-  el('lcTotal').textContent = fc(diyNet);
-  el('lcTotal').className   = 'card-ttl ' + (diyNet >= 0 ? 'c-diy' : 'c-neg');
+  el('lcTotal').textContent = fc(diyTotalFull);
+  el('lcTotal').className   = 'card-ttl ' + (diyTotalFull >= 0 ? 'c-diy' : 'c-neg');
   el('leftCard').className  = 'ccard cc-diy';
   el('lcRows').innerHTML =
-    mi('Gross Premiums',         fc(diyPremsIn)) +
-    mi('Protected Claims',       fn(diyProtCl)) +
+    mi('Gross Premiums',             fc(diyPremsIn)) +
+    mi('Protected Claims',           fn(diyProtCl)) +
     mi('Claims Cost (COGS+Ship+CS)', fc(diyClCost), 'neg') +
-    mi('Net Premium',            fc(diyNet), diyNet >= 0 ? 'pos' : 'neg');
+    mi('Net Protection',             fc(diyNet), diyNet >= 0 ? 'pos' : 'neg') +
+    (_retEnabled
+      ? ms('Returns (Self-Managed)') +
+        mi('Return Labels',           fc(retLabTot),  'neg') +
+        mi('Returns Platform',        fc(retPlatTot), 'neg') +
+        mi('Total Returns Burden',    fc(retBurden),  'neg') +
+        mi('Program Total',           fc(diyTotalFull), diyTotalFull >= 0 ? 'pos' : 'neg')
+      : '');
 
   // Right card: SI
+  const siTotalFull = _retEnabled ? siNet + retOffset : siNet;
   el('rcLabel').textContent = 'ShipInsure Program';
   el('rcLabel').className   = 'card-prog-label c-si';
-  el('rcTotal').textContent = fc(siNet);
+  el('rcTotal').textContent = fc(siTotalFull);
   el('rcTotal').className   = 'card-ttl c-si';
   el('rightCard').className = 'ccard cc-si';
   el('rcRows').innerHTML =
-    mi('Gross Premiums',              fc(siPremsIn)) +
-    mi('Protected Claims',            fn(siProtCl)) +
-    mi('SI Funded Claims (AOV+Ship)', fc(siFunded),  'neg') +
-    mi('Net Premiums (incl. Rev Share)', fc(siNet),  siNet >= 0 ? 'pos' : 'neg');
+    mi('Gross Premiums',                fc(siPremsIn)) +
+    mi('Protected Claims',              fn(siProtCl)) +
+    mi('SI Funded Claims (AOV+Ship)',   fc(siFunded),  'neg') +
+    mi('Net Premiums (incl. Rev Share)',fc(siNet),  siNet >= 0 ? 'pos' : 'neg') +
+    (_retEnabled
+      ? ms('Returns Offset (SI Covers)') +
+        mi('Label Coverage',             fc(siCovLab),  'pos') +
+        mi('Platform Coverage',          fc(siCovPlat), 'pos') +
+        mi('Total Returns Offset',       fc(retOffset), 'pos') +
+        mi('Program Total',              fc(siTotalFull), 'pos')
+      : '');
 
   _bd = {
     mode:'m1', isAnn, mul, mo, orders, aov, claimsP, cogsP, ship, cs,
@@ -706,22 +730,31 @@ function calcM2() {
     `<div class="hb-badges"><div class="hb-badge">${rsLbl}</div><div class="hb-badge">${clLbl}</div></div>`;
 
   // Left card: Competitor
+  const compTotalFull = _cretEnabled ? compNet + compRetOff : compNet;
   el('lcLabel').textContent = cname + ' Program';
   el('lcLabel').className   = 'card-prog-label c-comp';
-  el('lcTotal').textContent = fc(compNet);
-  el('lcTotal').className   = 'card-ttl ' + (compNet >= 0 ? 'c-comp' : 'c-neg');
+  el('lcTotal').textContent = fc(compTotalFull);
+  el('lcTotal').className   = 'card-ttl ' + (compTotalFull >= 0 ? 'c-comp' : 'c-neg');
   el('leftCard').className  = 'ccard cc-comp';
   el('lcRows').innerHTML =
     mi('Gross Premiums',   fc(compPremsIn)) +
     mi('Protected Claims', fn(compProtCl)) +
     mi('Funded Claims',    fc(compFunded), 'neg') +
     mi('Net Premium',      fc(compPost)) +
-    mi('Rev Share',        fc(compRevSh), 'pos');
+    mi('Rev Share',        fc(compRevSh), 'pos') +
+    (_cretEnabled
+      ? ms('Returns Offset (Comp Covers)') +
+        mi('Label Coverage',             fc(compCovLab),  'pos') +
+        mi('Platform Coverage',          fc(compCovPlat), 'pos') +
+        mi('Total Returns Offset',       fc(compRetOff),  'pos') +
+        mi('Program Total',              fc(compTotalFull), compTotalFull >= 0 ? 'pos' : 'neg')
+      : '');
 
   // Right card: SI
+  const siTotalFullM2 = _retEnabled ? siNet + siRetOff : siNet;
   el('rcLabel').textContent = 'ShipInsure Program';
   el('rcLabel').className   = 'card-prog-label c-si';
-  el('rcTotal').textContent = fc(siNet);
+  el('rcTotal').textContent = fc(siTotalFullM2);
   el('rcTotal').className   = 'card-ttl c-si';
   el('rightCard').className = 'ccard cc-si';
   el('rcRows').innerHTML =
@@ -729,7 +762,14 @@ function calcM2() {
     mi('Protected Claims', fn(siProtCl)) +
     mi('SI Funded Claims', fc(siFunded),  'neg') +
     mi('Net Premiums',     fc(siPost)) +
-    mi('Rev Share',        fc(siRevSh),   'pos');
+    mi('Rev Share',        fc(siRevSh),   'pos') +
+    (_retEnabled
+      ? ms('Returns Offset (SI Covers)') +
+        mi('Label Coverage',           fc(siCovLab),   'pos') +
+        mi('Platform Coverage',        fc(siCovPlat),  'pos') +
+        mi('Total Returns Offset',     fc(siRetOff),   'pos') +
+        mi('Program Total',            fc(siTotalFullM2), 'pos')
+      : '');
 
   _bd = {
     mode:'m2', isAnn, mul, mo, orders, aov, claimsP, ship, fundedPer, cname,
@@ -774,7 +814,14 @@ function renderBd() {
       r('Gross Premiums',    `${fn(_bd.diyProt)} × ${fcc(_bd.diyAvgP)}`,                fc(_bd.diyPremsIn)) +
       r('Protected Claims',  `${fn(_bd.diyProt)} × ${fp(_bd.claimsP * 100)}`,           fn(_bd.diyProtCl)) +
       r('Claims Cost',       `${fn(_bd.diyProtCl)} × ${fc(_bd.diyClaimCostPer)}`,       fc(_bd.diyClCost)) +
-      r('Net Premium',       'Premiums − Claims',                                        fc(_bd.diyNet));
+      r('Net Premium',       'Premiums − Claims',                                        fc(_bd.diyNet)) +
+      (_bd.retEnabled
+        ? r('— Returns —',    '',                                                         '') +
+          r('Return Labels',  `All returns (${fn(_bd.totRet)}) × Ship`,                  fc(_bd.retLabTot)) +
+          r('Platform',       'Full platform cost borne by merchant',                     fc(_bd.retPlatTot)) +
+          r('Returns Burden', 'Labels + Platform',                                        fc(_bd.retBurden)) +
+          r('Program Total',  'Net Premium − Returns Burden',                             fc(_bd.diyNet - _bd.retBurden))
+        : '');
 
     el('bdRightTitle').textContent = 'ShipInsure Program';
     el('bdRight').innerHTML =
@@ -785,7 +832,14 @@ function renderBd() {
       r('SI Funded Claims',  `${fn(_bd.siProtCl)} × ${fc(_bd.siFundedPer)}`,            fc(_bd.siFunded)) +
       r('Post-Claim Balance','Premiums − Funded',                                        fc(_bd.postClaim)) +
       r('Rev Share',         `max(0, PostClaim) × ${fpx(_bd.rsP * 100)}`,               fc(_bd.siRevSh)) +
-      r('Net Premiums',      'PostClaim + RevShare',                                     fc(_bd.siNet));
+      r('Net Premiums',      'PostClaim + RevShare',                                     fc(_bd.siNet)) +
+      (_bd.retEnabled
+        ? r('— Returns —',     '',                                                        '') +
+          r('Label Coverage',  `SI Protected (${fn(_bd.siProt)}) × RetRate × Ship`,      fc(_bd.siCovLab)) +
+          r('Platform Coverage','Full platform fee covered',                              fc(_bd.siCovPlat)) +
+          r('Returns Offset',  'Label + Platform',                                        fc(_bd.retOffset)) +
+          r('Program Total',   'Net Premiums + Returns Offset',                           fc(_bd.siNet + _bd.retOffset))
+        : '');
 
   } else {
     el('bdShared').innerHTML =
