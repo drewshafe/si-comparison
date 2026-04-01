@@ -19,7 +19,7 @@ body {
 
 /* ── Top strip ── */
 .top-strip {
-  background: linear-gradient(135deg, #4a5fc1 0%, #6b7fd7 100%);
+  background: linear-gradient(135deg, #6675FF 0%, #8a96ff 100%);
   padding: 10px 16px; display: flex; align-items: center;
   gap: 12px; flex-wrap: wrap; justify-content: space-between;
 }
@@ -32,7 +32,7 @@ body {
   border-radius:5px; background:transparent; color:rgba(255,255,255,0.7);
   cursor:pointer; transition:all 0.2s; white-space:nowrap;
 }
-.tab-btn.active { background:white; color:#4a5fc1; }
+.tab-btn.active { background:white; color:#6675FF; }
 .ctrl-group {
   display:flex; align-items:center; gap:5px;
   background:rgba(255,255,255,0.15); padding:5px 9px; border-radius:6px;
@@ -40,7 +40,7 @@ body {
 .ctrl-group label { font-size:0.79em; font-weight:600; color:white; white-space:nowrap; }
 .ctrl-group select {
   padding:3px 7px; font-size:0.79em; border-radius:5px; border:none;
-  background:white; color:#4a5fc1; font-weight:600;
+  background:white; color:#6675FF; font-weight:600;
 }
 
 /* ── Outputs strip ── */
@@ -58,12 +58,12 @@ body {
   padding:8px 10px; flex:1 1 0; min-width:90px; text-align:center;
   position:relative; overflow:visible;
 }
-.output-metric.om-primary { border-color:#4a5fc1; background:#f0f3ff; }
+.output-metric.om-primary { border-color:#6675FF; background:#eef0ff; }
 .om-label { font-size:0.66em; color:#6c757d; font-weight:500; margin-bottom:3px; line-height:1.2; }
 .om-value { font-size:1.05em; font-weight:700; color:#212529; }
-.om-value.c-si   { color:#4a5fc1; }
+.om-value.c-si   { color:#6675FF; }
 .om-value.c-diy  { color:#e67e22; }
-.om-value.c-comp { color:#7c3aed; }
+.om-value.c-comp { color:#333; }
 .om-bubble {
   position:absolute; top:-9px; right:-4px;
   background:#198754; color:white;
@@ -76,7 +76,7 @@ body {
 .middle-section { padding:14px 14px 10px; }
 .headline-row { display:flex; justify-content:center; margin-bottom:12px; }
 .headline-box {
-  background:linear-gradient(135deg, #4a5fc1 0%, #6b7fd7 100%);
+  background:linear-gradient(135deg, #6675FF 0%, #8a96ff 100%);
   color:white; border-radius:12px; padding:14px 28px;
   text-align:center; min-width:300px;
 }
@@ -95,17 +95,17 @@ body {
 .cards-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .ccard { border-radius:12px; padding:14px 16px; border:2px solid #dee2e6; }
 .ccard.cc-diy  { border-color:#e67e22; background:#fffaf5; }
-.ccard.cc-comp { border-color:#7c3aed; background:#f9f6ff; }
-.ccard.cc-si   { border-color:#4a5fc1; background:#f0f3ff; }
+.ccard.cc-comp { border-color:#555; background:#f8f8f8; }
+.ccard.cc-si   { border-color:#6675FF; background:#eef0ff; }
 .card-header { margin-bottom:10px; }
 .card-prog-label { font-size:0.72em; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:2px; }
 .card-prog-label.c-diy  { color:#e67e22; }
-.card-prog-label.c-comp { color:#7c3aed; }
-.card-prog-label.c-si   { color:#4a5fc1; }
+.card-prog-label.c-comp { color:#333; }
+.card-prog-label.c-si   { color:#6675FF; }
 .card-ttl { font-size:1.7em; font-weight:800; }
 .card-ttl.c-diy  { color:#e67e22; }
-.card-ttl.c-comp { color:#7c3aed; }
-.card-ttl.c-si   { color:#4a5fc1; }
+.card-ttl.c-comp { color:#333; }
+.card-ttl.c-si   { color:#6675FF; }
 .card-ttl.c-neg  { color:#dc3545; }
 .card-metric {
   display:flex; justify-content:space-between; align-items:center;
@@ -151,8 +151,8 @@ body {
   font-size:0.8em; width:100%; background:white;
 }
 .ig input:focus, .ig select:focus {
-  outline:none; border-color:#4a5fc1;
-  box-shadow:0 0 0 2px rgba(74,95,193,0.12);
+  outline:none; border-color:#6675FF;
+  box-shadow:0 0 0 2px rgba(102,117,255,0.12);
 }
 /* Premium type toggle */
 .prem-wrap { display:flex; }
@@ -164,7 +164,7 @@ body {
   transition:all 0.15s;
 }
 .ptype-btn:last-child { border-radius:0 6px 6px 0; }
-.ptype-btn.active { background:#4a5fc1; color:white; border-color:#4a5fc1; }
+.ptype-btn.active { background:#6675FF; color:white; border-color:#6675FF; }
 /* Returns section */
 .returns-row { display:none; flex-wrap:wrap; gap:8px; margin-top:6px; }
 .returns-row.visible { display:flex; }
@@ -179,19 +179,19 @@ body {
 .ret-btn.active { background:#e67e22; color:white; }
 .cret-btn {
   padding:5px 10px; font-size:0.74em; font-weight:700;
-  border:1px solid #7c3aed; border-radius:6px;
-  background:white; color:#7c3aed; cursor:pointer;
+  border:1px solid #555; border-radius:6px;
+  background:white; color:#555; cursor:pointer;
   display:flex; align-items:center; gap:4px; white-space:nowrap;
   transition:all 0.15s;
 }
-.cret-btn.active { background:#7c3aed; color:white; }
+.cret-btn.active { background:#555; color:white; }
 /* Primary button */
 .btn-gen {
-  padding:6px 14px; background:#4a5fc1; color:white;
+  padding:6px 14px; background:#6675FF; color:white;
   border:none; border-radius:6px; font-size:0.78em; font-weight:700;
   cursor:pointer; white-space:nowrap;
 }
-.btn-gen:hover { background:#3a4fa1; }
+.btn-gen:hover { background:#5564ee; }
 /* Link display */
 .link-row { display:none; gap:6px; align-items:center; margin-top:6px; }
 .link-row.visible { display:flex; }
@@ -209,9 +209,9 @@ body {
 .bd-toggle {
   width:100%; padding:10px 14px; background:#f8f9fa; border:none;
   cursor:pointer; text-align:left; font-size:0.8em; font-weight:600;
-  color:#4a5fc1; display:flex; align-items:center; gap:8px;
+  color:#6675FF; display:flex; align-items:center; gap:8px;
 }
-.bd-toggle:hover { background:#eef0f8; }
+.bd-toggle:hover { background:#eef0ff; }
 .bd-arrow { font-size:0.7em; transition:transform 0.2s; display:inline-block; }
 .bd-body { display:none; padding:12px 14px; border-top:1px solid #e9ecef; }
 .bd-body.open { display:block; }
@@ -225,7 +225,7 @@ body {
 }
 .bd-title.t-shared { color:#6c757d; }
 .bd-title.t-neg    { color:#e67e22; }
-.bd-title.t-pos    { color:#4a5fc1; }
+.bd-title.t-pos    { color:#6675FF; }
 .bd-row {
   display:grid; grid-template-columns:1fr auto auto;
   gap:8px; padding:3px 0; font-size:0.74em;
@@ -311,8 +311,22 @@ body {
     <div class="inputs-row" id="sharedRow">
       <div class="ig"><label for="orders">Orders</label><input type="text" id="orders" placeholder="0"></div>
       <div class="ig"><label for="aov">AOV</label><input type="text" id="aov" placeholder="$"></div>
-      <div class="ig"><label for="claimsRate">Claims Rate %</label><input type="text" id="claimsRate" placeholder="0"></div>
-      <div class="ig"><label for="cogsPercent">COGS %</label><input type="text" id="cogsPercent" placeholder="0"></div>
+      <div class="ig">
+        <label id="claimsLbl">Claims Rate %</label>
+        <div class="prem-wrap">
+          <input type="text" id="claimsRate" placeholder="0">
+          <button class="ptype-btn active" id="claimsPctBtn"  onclick="setClaimsType('pct')">#%</button>
+          <button class="ptype-btn"        id="claimsNumBtn"  onclick="setClaimsType('count')">#</button>
+        </div>
+      </div>
+      <div class="ig">
+        <label id="cogsLbl">Product Cost %</label>
+        <div class="prem-wrap">
+          <input type="text" id="cogsPercent" placeholder="0">
+          <button class="ptype-btn active" id="cogsPctBtn"  onclick="setCogsType('pct')">%</button>
+          <button class="ptype-btn"        id="cogsFlatBtn" onclick="setCogsType('flat')">$</button>
+        </div>
+      </div>
       <div class="ig"><label for="avgShipping">Avg Shipping</label><input type="text" id="avgShipping" placeholder="$"></div>
       <div class="ig"><label for="csCost">Avg Ticket Cost</label><input type="text" id="csCost" placeholder="$"></div>
     </div>
@@ -334,24 +348,41 @@ body {
     </div>
 
     <!-- Mode 2 inputs -->
-    <div class="inputs-row" id="m2Row" style="display:none;">
-      <div class="ig" style="min-width:100px;max-width:130px;">
-        <label for="compName">Competitor</label>
-        <input type="text" id="compName" placeholder="Enter name">
-      </div>
-      <div class="ig">
-        <label id="compPremLbl">Comp Premium %</label>
-        <div class="prem-wrap">
-          <input type="text" id="compPremRate" placeholder="0">
-          <button class="ptype-btn active" id="compPctBtn" onclick="setCompType('pct')">%</button>
-          <button class="ptype-btn"        id="compFlatBtn" onclick="setCompType('flat')">$</button>
+    <div id="m2Row" style="display:none; margin-top:6px;">
+      <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+        <!-- Left: Competitor inputs -->
+        <div style="display:flex; gap:8px; flex:1; flex-wrap:wrap; min-width:220px; padding:8px 10px; background:#f3f3f3; border-radius:8px; border:1px solid #ccc;">
+          <div style="width:100%; font-size:0.65em; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">Competitor</div>
+          <div class="ig" style="min-width:100px;max-width:130px;">
+            <label for="compName">Name</label>
+            <input type="text" id="compName" placeholder="Enter name">
+          </div>
+          <div class="ig">
+            <label id="compPremLbl">Premium %</label>
+            <div class="prem-wrap">
+              <input type="text" id="compPremRate" placeholder="0">
+              <button class="ptype-btn active" id="compPctBtn" onclick="setCompType('pct')">%</button>
+              <button class="ptype-btn"        id="compFlatBtn" onclick="setCompType('flat')">$</button>
+            </div>
+          </div>
+          <div class="ig"><label for="compAttach">Attach %</label><input type="text" id="compAttach" placeholder="50" value="50"></div>
+          <div class="ig"><label for="compRevShare">Rev Share %</label><input type="text" id="compRevShare" placeholder="0" value="0"></div>
+        </div>
+        <!-- Right: SI inputs -->
+        <div style="display:flex; gap:8px; flex:1; flex-wrap:wrap; min-width:220px; padding:8px 10px; background:#eef0ff; border-radius:8px; border:1px solid #b7bfff;">
+          <div style="width:100%; font-size:0.65em; font-weight:700; color:#6675FF; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">ShipInsure</div>
+          <div class="ig">
+            <label id="siPremLblM2">SI Premium %</label>
+            <div class="prem-wrap">
+              <input type="text" id="siPremRateM2" placeholder="3.00" value="3.00">
+              <button class="ptype-btn active" id="siPctBtnM2"  onclick="setSiTypeM2('pct')">%</button>
+              <button class="ptype-btn"        id="siFlatBtnM2" onclick="setSiTypeM2('flat')">$</button>
+            </div>
+          </div>
+          <div class="ig"><label for="siAttachM2">SI Attach %</label><input type="text" id="siAttachM2" placeholder="68" value="68"></div>
+          <div class="ig"><label for="revShareM2">Rev Share %</label><input type="text" id="revShareM2" placeholder="35" value="35"></div>
         </div>
       </div>
-      <div class="ig"><label for="compAttach">Comp Attach %</label><input type="text" id="compAttach" placeholder="50" value="50"></div>
-      <div class="ig"><label for="siPremRateM2">SI Premium %</label><input type="text" id="siPremRateM2" placeholder="3.00" value="3.00"></div>
-      <div class="ig"><label for="siAttachM2">SI Attach %</label><input type="text" id="siAttachM2" placeholder="68" value="68"></div>
-      <div class="ig"><label for="compRevShare">Rev Share % (Comp)</label><input type="text" id="compRevShare" placeholder="0" value="0"></div>
-      <div class="ig"><label for="revShareM2">Rev Share % (SI)</label><input type="text" id="revShareM2" placeholder="35" value="35"></div>
     </div>
 
     <!-- Returns row (both modes) -->
@@ -361,12 +392,20 @@ body {
         <input type="text" id="returnsRate" placeholder="0">
       </div>
       <div class="ig" style="max-width:160px;">
-        <label for="retPlatform">Returns Platform ($/mo)</label>
+        <label for="retPlatform">AfterShip Platform ($/mo)</label>
         <input type="text" id="retPlatform" placeholder="$">
       </div>
+      <div class="ig" style="max-width:150px;">
+        <label for="siPlatCov">AfterShip % Covered by SI</label>
+        <input type="text" id="siPlatCov" placeholder="100" value="100">
+      </div>
       <div class="ig" id="compRetPlatGroup" style="max-width:190px;display:none;">
-        <label for="compRetPlatform">Comp Returns Platform ($/mo)</label>
+        <label for="compRetPlatform">Comp Platform ($/mo)</label>
         <input type="text" id="compRetPlatform" placeholder="$">
+      </div>
+      <div class="ig" id="compPlatCovGroup" style="max-width:170px;display:none;">
+        <label for="compPlatCov">Comp Platform % Covered</label>
+        <input type="text" id="compPlatCov" placeholder="0" value="0">
       </div>
     </div>
 
@@ -410,6 +449,10 @@ let _retEnabled     = false;
 let _cretEnabled    = false;
 let _diyType        = 'pct';   // 'pct' | 'flat'
 let _compType       = 'pct';
+let _siTypeM2       = 'pct';   // 'pct' | 'flat'
+let _cogsType       = 'pct';   // 'pct' | 'flat'
+let _claimsType     = 'pct';   // 'pct' | 'count'
+let _prevTimeframe  = 'monthly';
 let _bd             = {};
 
 // ── Formatters ──
@@ -435,7 +478,28 @@ function setCompType(t) {
   _compType = t;
   el('compPctBtn').classList.toggle('active', t === 'pct');
   el('compFlatBtn').classList.toggle('active', t === 'flat');
-  el('compPremLbl').textContent = t === 'flat' ? 'Comp Premium $' : 'Comp Premium %';
+  el('compPremLbl').textContent = t === 'flat' ? 'Premium $' : 'Premium %';
+  recalc();
+}
+function setSiTypeM2(t) {
+  _siTypeM2 = t;
+  el('siPctBtnM2').classList.toggle('active', t === 'pct');
+  el('siFlatBtnM2').classList.toggle('active', t === 'flat');
+  el('siPremLblM2').textContent = t === 'flat' ? 'SI Premium $' : 'SI Premium %';
+  recalc();
+}
+function setCogsType(t) {
+  _cogsType = t;
+  el('cogsPctBtn').classList.toggle('active', t === 'pct');
+  el('cogsFlatBtn').classList.toggle('active', t === 'flat');
+  el('cogsLbl').textContent = t === 'flat' ? 'Product Cost $' : 'Product Cost %';
+  recalc();
+}
+function setClaimsType(t) {
+  _claimsType = t;
+  el('claimsPctBtn').classList.toggle('active', t === 'pct');
+  el('claimsNumBtn').classList.toggle('active', t === 'count');
+  el('claimsLbl').textContent = t === 'count' ? 'Claims Count #' : 'Claims Rate %';
   recalc();
 }
 
@@ -451,7 +515,8 @@ function toggleCompReturns() {
   _cretEnabled = !_cretEnabled;
   el('cretBtn').classList.toggle('active', _cretEnabled);
   el('cretIcon').textContent = _cretEnabled ? '✓' : '＋';
-  el('compRetPlatGroup').style.display = _cretEnabled ? '' : 'none';
+  el('compRetPlatGroup').style.display  = _cretEnabled ? '' : 'none';
+  el('compPlatCovGroup').style.display  = _cretEnabled ? '' : 'none';
   syncReturnsRow();
   recalc();
 }
@@ -464,11 +529,16 @@ function setMode(m) {
   _mode = m;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
   el('m1Row').style.display = m === 'm1' ? 'flex' : 'none';
-  el('m2Row').style.display = m === 'm2' ? 'flex' : 'none';
+  el('m2Row').style.display = m === 'm2' ? 'block' : 'none';
   el('cretBtn').style.display = m === 'm2' ? '' : 'none';
-  // If comp returns was on but we switch to m1, hide the extra input but keep state
-  if (m === 'm1') el('compRetPlatGroup').style.display = 'none';
-  else if (_cretEnabled) el('compRetPlatGroup').style.display = '';
+  // If comp returns was on but we switch to m1, hide the extra inputs but keep state
+  if (m === 'm1') {
+    el('compRetPlatGroup').style.display = 'none';
+    el('compPlatCovGroup').style.display = 'none';
+  } else if (_cretEnabled) {
+    el('compRetPlatGroup').style.display = '';
+    el('compPlatCovGroup').style.display = '';
+  }
   recalc();
 }
 
@@ -506,8 +576,6 @@ function calcM1() {
 
   const mo          = vn('orders');
   const aov         = vn('aov');
-  const claimsP     = vn('claimsRate') / 100;
-  const cogsP       = vn('cogsPercent') / 100;
   const ship        = vn('avgShipping');
   const cs          = vn('csCost');
   const diyPremRaw  = vn('diyPremRate');
@@ -517,6 +585,12 @@ function calcM1() {
   const rsP         = vn('revShare') / 100;
 
   const orders = mo * mul;
+
+  // Derived: COGS and Claims support dual input modes
+  const cogsRaw  = vn('cogsPercent');
+  const cogsP    = _cogsType   === 'flat'  ? (aov   > 0 ? cogsRaw / aov   : 0) : cogsRaw / 100;
+  const claimRaw = vn('claimsRate');
+  const claimsP  = _claimsType === 'count' ? (orders > 0 ? claimRaw / orders : 0) : claimRaw / 100;
 
   // Avg premiums
   const diyAvgP = _diyType === 'flat' ? diyPremRaw : aov * (diyPremRaw / 100);
@@ -545,18 +619,20 @@ function calcM1() {
   // Returns offset
   let retOffset = 0, retBurden = 0;
   let totRet = 0, retLabTot = 0, retPlatTot = 0, siCovLab = 0, siCovPlat = 0;
+  let siPlatCovP = 1;
   if (_retEnabled) {
     const retP    = vn('returnsRate') / 100;
     const platMo  = vn('retPlatform');
     const labCost = ship;  // return label cost = avg shipping
     const platPer = platMo * mul;
+    siPlatCovP    = vn('siPlatCov') / 100;  // % of AfterShip cost SI covers
     totRet    = orders * retP;
     retLabTot = totRet * labCost;
     retPlatTot = platPer;
     retBurden = retLabTot + retPlatTot;
     const siProtRet = siProt * retP;
     siCovLab  = siProtRet * labCost;
-    siCovPlat = platPer;
+    siCovPlat = platPer * siPlatCovP;
     retOffset = siCovLab + siCovPlat;
   }
 
@@ -644,21 +720,25 @@ function calcM2() {
 
   const mo          = vn('orders');
   const aov         = vn('aov');
-  const claimsP     = vn('claimsRate') / 100;
-  const cogsP       = vn('cogsPercent') / 100;
   const ship        = vn('avgShipping');
   const cs          = vn('csCost');
   const compPremRaw = vn('compPremRate');
   const compAttP    = vn('compAttach') / 100;
   const compRsP     = vn('compRevShare') / 100;
-  const siPremP     = vn('siPremRateM2') / 100;
   const siAttP      = vn('siAttachM2') / 100;
   const siRsP       = vn('revShareM2') / 100;
 
   const orders = mo * mul;
 
-  const compAvgP = _compType === 'flat' ? compPremRaw : aov * (compPremRaw / 100);
-  const siAvgP   = aov * siPremP;
+  // Derived: COGS and Claims support dual input modes
+  const cogsRaw  = vn('cogsPercent');
+  const cogsP    = _cogsType   === 'flat'  ? (aov   > 0 ? cogsRaw / aov   : 0) : cogsRaw / 100;
+  const claimRaw = vn('claimsRate');
+  const claimsP  = _claimsType === 'count' ? (orders > 0 ? claimRaw / orders : 0) : claimRaw / 100;
+
+  const compAvgP  = _compType  === 'flat' ? compPremRaw : aov * (compPremRaw / 100);
+  const siPremRaw = vn('siPremRateM2');
+  const siAvgP    = _siTypeM2  === 'flat' ? siPremRaw   : aov * (siPremRaw / 100);
   const fundedPer = aov + ship;  // both fund at AOV + shipping
 
   // Competitor program
@@ -682,6 +762,7 @@ function calcM2() {
   // Returns
   let siRetOff = 0, compRetOff = 0;
   let totRet = 0, siCovLab = 0, siCovPlat = 0, compCovLab = 0, compCovPlat = 0;
+  let siPlatCovP = 1, compPlatCovP = 0;
   const retP = vn('returnsRate') / 100;
   if (_retEnabled || _cretEnabled) {
     totRet = orders * retP;
@@ -689,15 +770,17 @@ function calcM2() {
   if (_retEnabled) {
     const platMo  = vn('retPlatform');
     const platPer = platMo * mul;
+    siPlatCovP    = vn('siPlatCov') / 100;   // % AfterShip cost that SI covers
     siCovLab  = (siProt * retP) * ship;
-    siCovPlat = platPer;
+    siCovPlat = platPer * siPlatCovP;
     siRetOff  = siCovLab + siCovPlat;
   }
   if (_cretEnabled) {
     const cplatMo  = vn('compRetPlatform');
     const cplatPer = cplatMo * mul;
+    compPlatCovP   = vn('compPlatCov') / 100; // % platform cost the competitor covers
     compCovLab  = (compProt * retP) * ship;
-    compCovPlat = cplatPer;
+    compCovPlat = cplatPer * compPlatCovP;
     compRetOff  = compCovLab + compCovPlat;
   }
 
@@ -729,6 +812,10 @@ function calcM2() {
   el('hbSub').innerHTML =
     `<div class="hb-badges"><div class="hb-badge">${rsLbl}</div><div class="hb-badge">${clLbl}</div></div>`;
 
+  // % platform cost covered — reflects input directly
+  const compPlatPct = compPlatCovP * 100;
+  const siPlatPct   = siPlatCovP   * 100;
+
   // Left card: Competitor
   const compTotalFull = _cretEnabled ? compNet + compRetOff : compNet;
   el('lcLabel').textContent = cname + ' Program';
@@ -744,10 +831,11 @@ function calcM2() {
     mi('Rev Share',        fc(compRevSh), 'pos') +
     (_cretEnabled
       ? ms('Returns Offset (Comp Covers)') +
-        mi('Label Coverage',             fc(compCovLab),  'pos') +
-        mi('Platform Coverage',          fc(compCovPlat), 'pos') +
-        mi('Total Returns Offset',       fc(compRetOff),  'pos') +
-        mi('Program Total',              fc(compTotalFull), compTotalFull >= 0 ? 'pos' : 'neg')
+        mi('Label Coverage',          fc(compCovLab),  'pos') +
+        mi('Platform Cost',           fc(compCovPlat), 'pos') +
+        mi('% Platform Cost Covered', fpx(compPlatPct)) +
+        mi('Total Returns Offset',    fc(compRetOff),  'pos') +
+        mi('Program Total',           fc(compTotalFull), compTotalFull >= 0 ? 'pos' : 'neg')
       : '');
 
   // Right card: SI
@@ -765,10 +853,11 @@ function calcM2() {
     mi('Rev Share',        fc(siRevSh),   'pos') +
     (_retEnabled
       ? ms('Returns Offset (SI Covers)') +
-        mi('Label Coverage',           fc(siCovLab),   'pos') +
-        mi('Platform Coverage',        fc(siCovPlat),  'pos') +
-        mi('Total Returns Offset',     fc(siRetOff),   'pos') +
-        mi('Program Total',            fc(siTotalFullM2), 'pos')
+        mi('Label Coverage',          fc(siCovLab),  'pos') +
+        mi('AfterShip Platform',      fc(siCovPlat), 'pos') +
+        mi('% Platform Cost Covered', fpx(siPlatPct)) +
+        mi('Total Returns Offset',    fc(siRetOff),  'pos') +
+        mi('Program Total',           fc(siTotalFullM2), 'pos')
       : '');
 
   _bd = {
@@ -878,17 +967,21 @@ const _PMAP = {
   diyPremRate:'spp', diyAttach:'sa', siPremRate:'sipp', siAttach:'sia', revShare:'rs',
   compName:'cname', compPremRate:'cpp', compAttach:'ca', compRevShare:'crs',
   siPremRateM2:'sipp2', siAttachM2:'sia2', revShareM2:'rs2',
-  returnsRate:'rrate', retPlatform:'rplat', compRetPlatform:'crplat',
+  returnsRate:'rrate', retPlatform:'rplat', siPlatCov:'splcov',
+  compRetPlatform:'crplat', compPlatCov:'cplcov',
   timeframe:'tf'
 };
 
 function generateLink() {
   const url = new URL(window.location.href.split('?')[0]);
-  url.searchParams.set('mode', _mode);
-  url.searchParams.set('ret',  _retEnabled  ? '1' : '0');
-  url.searchParams.set('cret', _cretEnabled ? '1' : '0');
-  url.searchParams.set('dpt',  _diyType);
-  url.searchParams.set('cpt',  _compType);
+  url.searchParams.set('mode',   _mode);
+  url.searchParams.set('ret',    _retEnabled  ? '1' : '0');
+  url.searchParams.set('cret',   _cretEnabled ? '1' : '0');
+  url.searchParams.set('dpt',    _diyType);
+  url.searchParams.set('cpt',    _compType);
+  url.searchParams.set('spt2',   _siTypeM2);
+  url.searchParams.set('cogst',  _cogsType);
+  url.searchParams.set('claimst',_claimsType);
   Object.entries(_PMAP).forEach(([id, key]) => {
     const e = el(id);
     if (e) url.searchParams.set(key, e.value);
@@ -913,10 +1006,14 @@ function loadSaved() {
   Object.entries(_PMAP).forEach(([id, key]) => {
     if (p.has(key)) { const e = el(id); if (e) e.value = p.get(key); }
   });
-  if (p.get('dpt') === 'flat') setDiyType('flat');
-  if (p.get('cpt') === 'flat') setCompType('flat');
+  if (p.get('dpt')    === 'flat')  setDiyType('flat');
+  if (p.get('cpt')    === 'flat')  setCompType('flat');
+  if (p.get('spt2')   === 'flat')  setSiTypeM2('flat');
+  if (p.get('cogst')  === 'flat')  setCogsType('flat');
+  if (p.get('claimst')=== 'count') setClaimsType('count');
   if (p.get('ret')  === '1' && !_retEnabled)  toggleReturns();
   if (p.get('cret') === '1' && !_cretEnabled) toggleCompReturns();
+  _prevTimeframe = el('timeframe').value;
   recalc();
 }
 
@@ -924,7 +1021,7 @@ function loadSaved() {
 function resetAll() {
   ['orders','aov','claimsRate','cogsPercent','avgShipping','csCost',
    'diyPremRate','siPremRate','compName','compPremRate','compRevShare',
-   'returnsRate','retPlatform','compRetPlatform'].forEach(id => {
+   'returnsRate','retPlatform','compRetPlatform','compPlatCov'].forEach(id => {
     const e = el(id); if (e) e.value = '';
   });
   el('diyAttach').value    = '60';
@@ -934,18 +1031,37 @@ function resetAll() {
   el('siPremRateM2').value = '3.00';
   el('siAttachM2').value   = '68';
   el('revShareM2').value   = '35';
+  el('siPlatCov').value    = '100';
+  el('compPlatCov').value  = '0';
   el('timeframe').value    = 'monthly';
   if (_retEnabled)  toggleReturns();
   if (_cretEnabled) toggleCompReturns();
-  if (_diyType  !== 'pct') setDiyType('pct');
-  if (_compType !== 'pct') setCompType('pct');
+  if (_diyType    !== 'pct') setDiyType('pct');
+  if (_compType   !== 'pct') setCompType('pct');
+  if (_siTypeM2   !== 'pct') setSiTypeM2('pct');
+  if (_cogsType   !== 'pct') setCogsType('pct');
+  if (_claimsType !== 'pct') setClaimsType('pct');
+  _prevTimeframe = 'monthly';
   el('linkRow').classList.remove('visible');
   setMode('m1');
 }
 
 // ── Init ──
 document.querySelectorAll('input[type="text"]').forEach(e => e.addEventListener('input', recalc));
-document.querySelectorAll('select').forEach(e => e.addEventListener('change', recalc));
+
+// Timeframe select: auto-convert orders value on switch
+el('timeframe').addEventListener('change', function() {
+  const curr = this.value;
+  const ordEl = el('orders');
+  const v = parseFloat((ordEl.value || '').replace(/[$,\s]/g,''));
+  if (!isNaN(v) && v > 0) {
+    if (_prevTimeframe === 'monthly' && curr === 'annual')  ordEl.value = Math.round(v * 12);
+    else if (_prevTimeframe === 'annual' && curr === 'monthly') ordEl.value = Math.round(v / 12);
+  }
+  _prevTimeframe = curr;
+  recalc();
+});
+
 el('logoArea').addEventListener('click', resetAll);
 
 loadSaved();
