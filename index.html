@@ -353,9 +353,13 @@ body {
       </div>
     </div>
     <div class="returns-row" id="returnsRow">
-      <div class="ig" style="max-width:130px;">
-        <label for="returnsRate">Returns Rate %</label>
-        <input type="text" id="returnsRate" placeholder="0">
+      <div class="ig" style="max-width:160px;">
+        <label id="returnsLbl">Returns Rate %</label>
+        <div class="prem-wrap">
+          <input type="text" id="returnsRate" placeholder="0">
+          <button class="ptype-btn active" id="retPctBtn"  onclick="setReturnsType('pct')">%</button>
+          <button class="ptype-btn"        id="retNumBtn"  onclick="setReturnsType('count')">#</button>
+        </div>
       </div>
       <div class="ig" style="max-width:160px;">
         <label for="retPlatform">AfterShip Platform ($/mo)</label>
@@ -403,7 +407,7 @@ body {
   </div>
 </div>
 <script>
-let _mode='m1',_retEnabled=false,_cretEnabled=false,_diyType='pct',_compType='pct',_siTypeM2='pct',_cogsType='pct',_claimsType='pct',_prevTimeframe='monthly',_bd={};
+let _mode='m1',_retEnabled=false,_cretEnabled=false,_diyType='pct',_compType='pct',_siTypeM2='pct',_cogsType='pct',_claimsType='pct',_returnsType='pct',_prevTimeframe='monthly',_bd={};
 const fc  = v => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(v);
 const fcc = v => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(v);
 const fn  = v => new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(v);
@@ -417,6 +421,7 @@ function setCompType(t){_compType=t;el('compPctBtn').classList.toggle('active',t
 function setSiTypeM2(t){_siTypeM2=t;el('siPctBtnM2').classList.toggle('active',t==='pct');el('siFlatBtnM2').classList.toggle('active',t==='flat');el('siPremLblM2').textContent=t==='flat'?'SI Premium $':'SI Premium %';recalc();}
 function setCogsType(t){_cogsType=t;el('cogsPctBtn').classList.toggle('active',t==='pct');el('cogsFlatBtn').classList.toggle('active',t==='flat');el('cogsLbl').textContent=t==='flat'?'Product Cost $':'Product Cost %';recalc();}
 function setClaimsType(t){_claimsType=t;el('claimsPctBtn').classList.toggle('active',t==='pct');el('claimsNumBtn').classList.toggle('active',t==='count');el('claimsLbl').textContent=t==='count'?'Claims Count #':'Claims Rate %';recalc();}
+function setReturnsType(t){_returnsType=t;el('retPctBtn').classList.toggle('active',t==='pct');el('retNumBtn').classList.toggle('active',t==='count');el('returnsLbl').textContent=t==='count'?'Returns Count #':'Returns Rate %';recalc();}
 function toggleReturns(){_retEnabled=!_retEnabled;el('retBtn').classList.toggle('active',_retEnabled);el('retIcon').textContent=_retEnabled?'✓':'+';syncReturnsRow();recalc();}
 function toggleCompReturns(){_cretEnabled=!_cretEnabled;el('cretBtn').classList.toggle('active',_cretEnabled);el('cretIcon').textContent=_cretEnabled?'✓':'+';el('compRetPlatGroup').style.display=_cretEnabled?'':'none';el('compPlatCovGroup').style.display=_cretEnabled?'':'none';syncReturnsRow();recalc();}
 function syncReturnsRow(){el('returnsRow').classList.toggle('visible',_retEnabled||_cretEnabled);}
@@ -458,13 +463,15 @@ function calcM1(){
   const siProt=orders*siAttP,siPremsIn=siProt*siAvgP,siProtCl=siProt*claimsP,siFunded=siProtCl*siFundedPer,postClaim=siPremsIn-siFunded,siRevSh=Math.max(0,postClaim)*rsP,siNet=postClaim+siRevSh;
   let retOffset=0,retBurden=0,retP=0,totRet=0,retLabTot=0,retPlatTot=0,siCovLab=0,siCovPlat=0,siPlatCovP=1;
   if(_retEnabled){
-    retP=vn('returnsRate')/100;const platMo=vn('retPlatform'),platPer=platMo*mul;
+    const retRaw=vn('returnsRate');
+    retP=_returnsType==='count'?(orders>0?retRaw/orders:0):retRaw/100;
+    const platMo=vn('retPlatform'),platPer=platMo*mul;
     siPlatCovP=vn('siPlatCov')/100;totRet=orders*retP;retLabTot=totRet*ship;retPlatTot=platPer;retBurden=retLabTot+retPlatTot;
     siCovLab=(siProt*retP)*ship;siCovPlat=platPer*siPlatCovP;retOffset=siCovLab+siCovPlat;
   }
   const advantage=(siNet+retOffset)-(diyNet-retBurden);
   const attachLift=(siAttP-diyAttP)*100;
-  el('outputsInner').innerHTML=omP(fn(mo),'Monthly Orders')+om('DIY Protected Orders',fn(diyProt),'c-diy',null)+om('SI Protected Orders',fn(siProt),'c-si',siProt,diyProt)+om('Avg DIY Premium',fcc(diyAvgP),'c-diy',null)+om('Avg SI Premium',fcc(siAvgP),'c-si',siAvgP,diyAvgP)+om('DIY Premiums Collected',fc(diyPremsIn),'c-diy',null)+om('SI Premiums Collected',fc(siPremsIn),'c-si',siPremsIn,diyPremsIn);
+  el('outputsInner').innerHTML=omP(fn(isAnn?orders:mo),isAnn?'Annual Orders':'Monthly Orders')+om('DIY Protected Orders',fn(diyProt),'c-diy',null)+om('SI Protected Orders',fn(siProt),'c-si',siProt,diyProt)+om('Avg DIY Premium',fcc(diyAvgP),'c-diy',null)+om('Avg SI Premium',fcc(siAvgP),'c-si',siAvgP,diyAvgP)+om('DIY Premiums Collected',fc(diyPremsIn),'c-diy',null)+om('SI Premiums Collected',fc(siPremsIn),'c-si',siPremsIn,diyPremsIn);
   el('hbLabel').textContent='SI Direct Financial Advantage';
   el('hbValue').textContent=fc(advantage);
   if(Math.abs(attachLift)>0.05){
@@ -506,7 +513,8 @@ function calcM2(){
   // Returns
   let siRetOff=0,compRetOff=0,totRet=0,siCovLab=0,siCovPlat=0,compCovLab=0,compCovPlat=0;
   let siPlatCovP=1,compPlatCovP=0,siPlatPer=0,compPlatPer=0;
-  const retP=vn('returnsRate')/100;
+  const retRaw=vn('returnsRate');
+  const retP=_returnsType==='count'?(orders>0?retRaw/orders:0):retRaw/100;
   if(_retEnabled||_cretEnabled){totRet=orders*retP;}
   if(_retEnabled){siPlatPer=vn('retPlatform')*mul;siPlatCovP=vn('siPlatCov')/100;siCovLab=(siProt*retP)*ship;siCovPlat=siPlatPer*siPlatCovP;siRetOff=siCovLab+siCovPlat;}
   if(_cretEnabled){compPlatPer=vn('compRetPlatform')*mul;compPlatCovP=vn('compPlatCov')/100;compCovLab=(compProt*retP)*ship;compCovPlat=compPlatPer*compPlatCovP;compRetOff=compCovLab+compCovPlat;}
@@ -519,7 +527,7 @@ function calcM2(){
   // ── NEW: gross premium diff badge
   const grossPremDiff=siPremsIn-compPremsIn;
 
-  el('outputsInner').innerHTML=omP(fn(mo),'Monthly Orders')+om(cname+' Protected Orders',fn(compProt),'c-comp',null)+om('SI Protected Orders',fn(siProt),'c-si',siProt,compProt)+om('Avg '+cname+' Premium',fcc(compAvgP),'c-comp',null)+om('Avg SI Premium',fcc(siAvgP),'c-si',siAvgP,compAvgP)+om(cname+' Premiums Collected',fc(compPremsIn),'c-comp',null)+om('SI Premiums Collected',fc(siPremsIn),'c-si',siPremsIn,compPremsIn);
+  el('outputsInner').innerHTML=omP(fn(isAnn?orders:mo),isAnn?'Annual Orders':'Monthly Orders')+om(cname+' Protected Orders',fn(compProt),'c-comp',null)+om('SI Protected Orders',fn(siProt),'c-si',siProt,compProt)+om('Avg '+cname+' Premium',fcc(compAvgP),'c-comp',null)+om('Avg SI Premium',fcc(siAvgP),'c-si',siAvgP,compAvgP)+om(cname+' Premiums Collected',fc(compPremsIn),'c-comp',null)+om('SI Premiums Collected',fc(siPremsIn),'c-si',siPremsIn,compPremsIn);
   el('hbLabel').textContent='SI Advantage vs '+cname;
   el('hbValue').textContent=fc(advantage);
   const rsLbl=rsDiffAmt>=0?`↑ ${fc(rsDiffAmt)} more rev share`:`↓ ${fc(Math.abs(rsDiffAmt))} less rev share`;
@@ -546,13 +554,13 @@ function renderBd(){
   if(!_bd.ready)return;
   const r=(lbl,eq,val)=>`<div class="bd-row"><span class="bd-lbl">${lbl}</span><span class="bd-eq">${eq}</span><span class="bd-val">${val}</span></div>`;
   if(_bd.mode==='m1'){
-    el('bdShared').innerHTML=r('Monthly Orders','',fn(_bd.mo))+r('AOV','',fc(_bd.aov))+r('Claims Rate','',fp(_bd.claimsP*100))+r('COGS %','',fp(_bd.cogsP*100))+r('Avg Shipping','',fc(_bd.ship))+r('CS Ticket Cost','',fc(_bd.cs))+r('DIY Claim Cost/Cl','AOV×COGS + Ship + CS',fc(_bd.diyClaimCostPer))+r('SI Funded/Claim','AOV + Ship',fc(_bd.siFundedPer))+(_bd.retEnabled?r('Returns Label Cost','= Avg Shipping',fc(_bd.ship)):'');
+    el('bdShared').innerHTML=r((_bd.isAnn?'Annual':'Monthly')+' Orders','',fn(_bd.isAnn?_bd.orders:_bd.mo))+r('AOV','',fc(_bd.aov))+r('Claims Rate','',fp(_bd.claimsP*100))+r('COGS %','',fp(_bd.cogsP*100))+r('Avg Shipping','',fc(_bd.ship))+r('CS Ticket Cost','',fc(_bd.cs))+r('DIY Claim Cost/Cl','AOV×COGS + Ship + CS',fc(_bd.diyClaimCostPer))+r('SI Funded/Claim','AOV + Ship',fc(_bd.siFundedPer))+(_bd.retEnabled?r('Returns Label Cost','= Avg Shipping',fc(_bd.ship)):'');
     el('bdLeftTitle').textContent='Self-Insure Program';
     el('bdLeft').innerHTML=r('Protected Orders',`${fn(_bd.orders)} × ${fpx(_bd.diyAttP*100)}`,fn(_bd.diyProt))+r('Avg DIY Premium',_diyType==='flat'?'flat fee':`AOV × ${fpx(_bd.diyAvgP/_bd.aov*100)}`,fcc(_bd.diyAvgP))+r('Gross Premiums',`${fn(_bd.diyProt)} × ${fcc(_bd.diyAvgP)}`,fc(_bd.diyPremsIn))+r('Protected Claims',`${fn(_bd.diyProt)} × ${fp(_bd.claimsP*100)}`,fn(_bd.diyProtCl))+r('Claims Cost',`${fn(_bd.diyProtCl)} × ${fc(_bd.diyClaimCostPer)}`,fc(_bd.diyClCost))+r('Net Premium','Premiums − Claims',fc(_bd.diyNet))+(_bd.retEnabled?r('— Returns (Self-Managed) —','','')+r('Total Returns',`${fn(_bd.orders)} × ${fpx(_bd.retP*100)}`,fn(_bd.totRet))+r('Return Labels',`${fn(_bd.totRet)} × ${fc(_bd.ship)} (avg ship)`,fc(_bd.retLabTot))+r('Platform Cost','Full AfterShip cost — no coverage',fc(_bd.retPlatTot))+r('Returns Burden','Labels + Platform',fc(_bd.retBurden))+r('Program Total','Net Premium − Returns Burden',fc(_bd.diyNet-_bd.retBurden)):'');
     el('bdRightTitle').textContent='ShipInsure Program';
     el('bdRight').innerHTML=r('Protected Orders',`${fn(_bd.orders)} × ${fpx(_bd.siAttP*100)}`,fn(_bd.siProt))+r('Avg SI Premium',`AOV × ${fpx(_bd.siAvgP/(_bd.aov||1)*100)}`,fcc(_bd.siAvgP))+r('Gross Premiums',`${fn(_bd.siProt)} × ${fcc(_bd.siAvgP)}`,fc(_bd.siPremsIn))+r('Protected Claims',`${fn(_bd.siProt)} × ${fp(_bd.claimsP*100)}`,fn(_bd.siProtCl))+r('SI Funded Claims',`${fn(_bd.siProtCl)} × ${fc(_bd.siFundedPer)}`,fc(_bd.siFunded))+r('Post-Claim Balance','Premiums − Funded',fc(_bd.postClaim))+r('Rev Share',`max(0, PostClaim) × ${fpx(_bd.rsP*100)}`,fc(_bd.siRevSh))+r('Net Premiums','PostClaim + RevShare',fc(_bd.siNet))+(_bd.retEnabled?r('— Returns (SI Covers) —','','')+r('Total Returns',`${fn(_bd.orders)} × ${fpx(_bd.retP*100)}`,fn(_bd.totRet))+r('Label Coverage',`SI Protected (${fn(_bd.siProt)}) × RetRate × Ship`,fc(_bd.siCovLab))+r('AfterShip Platform',`${fc(_bd.retPlatTot)} × ${fpx(_bd.siPlatCovP*100)} covered`,fc(_bd.siCovPlat))+r('Returns Offset','Label + Platform',fc(_bd.retOffset))+r('Program Total','Net Premiums + Returns Offset',fc(_bd.siNet+_bd.retOffset)):'');
   }else{
-    el('bdShared').innerHTML=r('Monthly Orders','',fn(_bd.mo))+r('AOV','',fc(_bd.aov))+r('Claims Rate','',fp(_bd.claimsP*100))+r('Avg Shipping','',fc(_bd.ship))+r('Funded Per Claim','AOV + Ship',fc(_bd.fundedPer));
+    el('bdShared').innerHTML=r((_bd.isAnn?'Annual':'Monthly')+' Orders','',fn(_bd.isAnn?_bd.orders:_bd.mo))+r('AOV','',fc(_bd.aov))+r('Claims Rate','',fp(_bd.claimsP*100))+r('Avg Shipping','',fc(_bd.ship))+r('Funded Per Claim','AOV + Ship',fc(_bd.fundedPer));
     el('bdLeftTitle').textContent=_bd.cname+' Program';
     el('bdLeft').innerHTML=r('Protected Orders',`${fn(_bd.orders)} × ${fpx(_bd.compAttP*100)}`,fn(_bd.compProt))+r('Avg Premium',_compType==='flat'?'flat fee':'AOV × rate',fcc(_bd.compAvgP))+r('Gross Premiums','',fc(_bd.compPremsIn))+r('Protected Claims','',fn(_bd.compProtCl))+r('Funded Claims',`${fn(_bd.compProtCl)} × ${fc(_bd.fundedPer)}`,fc(_bd.compFunded))+r('Net Premium','Premiums − Funded',fc(_bd.compPost))+r('Rev Share',`max(0,Post) × ${fpx(_bd.compRsP*100)}`,fc(_bd.compRevSh))+(_bd.cretEnabled?r('— Returns (Comp Covers) —','','')+r('Total Returns',`${fn(_bd.orders)} × ${fpx(_bd.retP*100)}`,fn(_bd.totRet))+r('Label Coverage',`Comp Protected (${fn(_bd.compProt)}) × RetRate × Ship`,fc(_bd.compCovLab))+r('Platform Coverage',`${fc(_bd.compPlatPer)} × ${fpx(_bd.compPlatCovP*100)} covered`,fc(_bd.compCovPlat))+r('Returns Offset','Label + Platform',fc(_bd.compRetOff))+r('Program Total','Net + Returns Offset',fc(_bd.compNet+_bd.compRetOff)):'');
     el('bdRightTitle').textContent='ShipInsure Program';
@@ -561,10 +569,11 @@ function renderBd(){
 }
 
 const _PMAP={orders:'orders',aov:'aov',claimsRate:'cr',cogsPercent:'cogs',avgShipping:'aship',csCost:'cs',diyPremRate:'spp',diyAttach:'sa',siPremRate:'sipp',siAttach:'sia',revShare:'rs',compName:'cname',compPremRate:'cpp',compAttach:'ca',compRevShare:'crs',siPremRateM2:'sipp2',siAttachM2:'sia2',revShareM2:'rs2',returnsRate:'rrate',retPlatform:'rplat',siPlatCov:'splcov',compRetPlatform:'crplat',compPlatCov:'cplcov',timeframe:'tf'};
+
 function generateLink(){
   const url=new URL(window.location.href.split('?')[0]);
   url.searchParams.set('mode',_mode);url.searchParams.set('ret',_retEnabled?'1':'0');url.searchParams.set('cret',_cretEnabled?'1':'0');
-  url.searchParams.set('dpt',_diyType);url.searchParams.set('cpt',_compType);url.searchParams.set('spt2',_siTypeM2);url.searchParams.set('cogst',_cogsType);url.searchParams.set('claimst',_claimsType);
+  url.searchParams.set('dpt',_diyType);url.searchParams.set('cpt',_compType);url.searchParams.set('spt2',_siTypeM2);url.searchParams.set('cogst',_cogsType);url.searchParams.set('claimst',_claimsType);url.searchParams.set('retst',_returnsType);
   Object.entries(_PMAP).forEach(([id,key])=>{const e=el(id);if(e)url.searchParams.set(key,e.value);});
   el('shareableLink').value=url.toString();el('linkRow').classList.add('visible');
 }
@@ -576,7 +585,7 @@ function loadSaved(){
   const p=new URLSearchParams(window.location.search);
   setMode(p.has('mode')?p.get('mode'):'m1');
   Object.entries(_PMAP).forEach(([id,key])=>{if(p.has(key)){const e=el(id);if(e)e.value=p.get(key);}});
-  if(p.get('dpt')==='flat')setDiyType('flat');if(p.get('cpt')==='flat')setCompType('flat');if(p.get('spt2')==='flat')setSiTypeM2('flat');if(p.get('cogst')==='flat')setCogsType('flat');if(p.get('claimst')==='count')setClaimsType('count');
+  if(p.get('dpt')==='flat')setDiyType('flat');if(p.get('cpt')==='flat')setCompType('flat');if(p.get('spt2')==='flat')setSiTypeM2('flat');if(p.get('cogst')==='flat')setCogsType('flat');if(p.get('claimst')==='count')setClaimsType('count');if(p.get('retst')==='count')setReturnsType('count');
   if(p.get('ret')==='1'&&!_retEnabled)toggleReturns();if(p.get('cret')==='1'&&!_cretEnabled)toggleCompReturns();
   _prevTimeframe=el('timeframe').value;recalc();
 }
@@ -586,7 +595,7 @@ function resetAll(){
   el('siPremRateM2').value='3.00';el('siAttachM2').value='68';el('revShareM2').value='35';
   el('siPlatCov').value='100';el('compPlatCov').value='0';el('timeframe').value='monthly';
   if(_retEnabled)toggleReturns();if(_cretEnabled)toggleCompReturns();
-  if(_diyType!=='pct')setDiyType('pct');if(_compType!=='pct')setCompType('pct');if(_siTypeM2!=='pct')setSiTypeM2('pct');if(_cogsType!=='pct')setCogsType('pct');if(_claimsType!=='pct')setClaimsType('pct');
+  if(_diyType!=='pct')setDiyType('pct');if(_compType!=='pct')setCompType('pct');if(_siTypeM2!=='pct')setSiTypeM2('pct');if(_cogsType!=='pct')setCogsType('pct');if(_claimsType!=='pct')setClaimsType('pct');if(_returnsType!=='pct')setReturnsType('pct');
   _prevTimeframe='monthly';el('linkRow').classList.remove('visible');setMode('m1');
 }
 document.querySelectorAll('input[type="text"]').forEach(e=>e.addEventListener('input',recalc));
