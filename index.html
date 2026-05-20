@@ -199,6 +199,21 @@ body {
   border:none; border-radius:6px; font-size:0.75em; font-weight:600; cursor:pointer;
 }
 
+/* Input sections */
+.input-section { margin-top: 8px; }
+.input-section-label {
+  font-size: 0.67em; font-weight: 700; color: #4a5fc1;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.addl-toggle {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.69em; font-weight: 700; color: #6c757d;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 3px 0; display: flex; align-items: center; gap: 5px;
+}
+.addl-toggle:hover { color: #4a5fc1; }
+.addl-arrow { font-size: 0.75em; transition: transform 0.2s; display: inline-block; }
+
 /* ── Breakdown ── */
 .calc-breakdown { border-top:1px solid #e9ecef; }
 .bd-toggle {
@@ -289,78 +304,90 @@ body {
   <!-- ── Inputs strip ── -->
   <div class="inputs-strip">
     <div class="inputs-header">
-      <div class="inputs-title">Merchant Inputs</div>
+      <div class="inputs-title">Inputs</div>
       <div class="inputs-actions">
         <button class="ret-btn" id="retBtn" onclick="toggleReturns()">
           <span id="retIcon">＋</span> SI Returns Offset
         </button>
-        <button class="cret-btn" id="cretBtn" onclick="toggleCompReturns()" style="display:none;">
-          <span id="cretIcon">＋</span> Comp Returns
+        <button class="cret-btn" id="cretBtn" onclick="toggleCompReturns()">
+          <span id="cretIcon">＋</span> <span id="cretBtnLabel">Comp Returns Offset</span>
         </button>
         <button class="btn-gen" onclick="generateLink()">Generate Link</button>
       </div>
     </div>
 
-    <!-- Shared inputs -->
-    <div class="inputs-row" id="sharedRow">
-      <div class="ig"><label for="orders">Orders</label><input type="text" id="orders" placeholder="0"></div>
-      <div class="ig"><label for="aov">AOV</label><input type="text" id="aov" placeholder="$"></div>
-      <div class="ig"><label for="claimsRate">Claims Rate %</label><input type="text" id="claimsRate" placeholder="0"></div>
-      <div class="ig"><label for="cogsPercent">COGS %</label><input type="text" id="cogsPercent" placeholder="0"></div>
-      <div class="ig"><label for="avgShipping">Avg Shipping</label><input type="text" id="avgShipping" placeholder="$"></div>
-      <div class="ig"><label for="csCost">Avg Ticket Cost</label><input type="text" id="csCost" placeholder="$"></div>
+    <!-- Hidden m1 inputs (keep IDs in DOM for JS references) -->
+    <div id="m1Row" style="display:none;">
+      <input type="text" id="diyPremRate" value="0">
+      <input type="text" id="diyAttach" value="60">
+      <input type="text" id="siPremRate" value="3.00">
+      <input type="text" id="siAttach" value="68">
+      <input type="text" id="revShare" value="35">
+      <button id="diyPctBtn" onclick="setDiyType('pct')"></button>
+      <button id="diyFlatBtn" onclick="setDiyType('flat')"></button>
     </div>
 
-    <!-- Mode 1 inputs (hidden — self-insure tab removed) -->
-    <div class="inputs-row" id="m1Row" style="display:none;">
-      <div class="ig">
-        <label id="diyPremLbl">DIY Premium %</label>
-        <div class="prem-wrap">
-          <input type="text" id="diyPremRate" placeholder="0">
-          <button class="ptype-btn active" id="diyPctBtn" onclick="setDiyType('pct')">%</button>
-          <button class="ptype-btn"        id="diyFlatBtn" onclick="setDiyType('flat')">$</button>
+    <!-- Core Merchant Inputs -->
+    <div class="input-section">
+      <div class="input-section-label">Core Merchant Inputs</div>
+      <div class="inputs-row">
+        <div class="ig"><label for="orders">Orders</label><input type="text" id="orders" placeholder="0"></div>
+        <div class="ig"><label for="aov">AOV</label><input type="text" id="aov" placeholder="$"></div>
+        <div class="ig"><label for="claimsRate">Claims Rate %</label><input type="text" id="claimsRate" placeholder="0"></div>
+        <div class="ig" id="coreReturnsRateField" style="display:none;"><label for="returnsRate">Returns Rate %</label><input type="text" id="returnsRate" placeholder="0"></div>
+        <div class="ig" id="coreAvgShippingField" style="display:none;"><label for="avgShipping">Avg Shipping</label><input type="text" id="avgShipping" placeholder="$"></div>
+      </div>
+    </div>
+
+    <!-- Merchant — [Comp Name] Inputs -->
+    <div class="input-section">
+      <div class="input-section-label" id="compSectionLabel">Merchant — Competitor Inputs</div>
+      <div class="inputs-row">
+        <div class="ig" style="min-width:100px;max-width:130px;">
+          <label for="compName">Competitor</label>
+          <input type="text" id="compName" placeholder="Enter name" oninput="syncCompLabels()">
         </div>
-      </div>
-      <div class="ig"><label for="diyAttach">DIY Attach %</label><input type="text" id="diyAttach" placeholder="60" value="60"></div>
-      <div class="ig"><label for="siPremRate">SI Premium %</label><input type="text" id="siPremRate" placeholder="3.00" value="3.00"></div>
-      <div class="ig"><label for="siAttach">SI Attach %</label><input type="text" id="siAttach" placeholder="68" value="68"></div>
-      <div class="ig"><label for="revShare">Net Rev Share %</label><input type="text" id="revShare" placeholder="35" value="35"></div>
-    </div>
-
-    <!-- Mode 2 inputs -->
-    <div class="inputs-row" id="m2Row" style="display:none;">
-      <div class="ig" style="min-width:100px;max-width:130px;">
-        <label for="compName">Competitor</label>
-        <input type="text" id="compName" placeholder="Enter name">
-      </div>
-      <div class="ig">
-        <label id="compPremLbl">Comp Premium %</label>
-        <div class="prem-wrap">
-          <input type="text" id="compPremRate" placeholder="0">
-          <button class="ptype-btn active" id="compPctBtn" onclick="setCompType('pct')">%</button>
-          <button class="ptype-btn"        id="compFlatBtn" onclick="setCompType('flat')">$</button>
+        <div class="ig">
+          <label id="compPremLbl">Comp Premium %</label>
+          <div class="prem-wrap">
+            <input type="text" id="compPremRate" placeholder="0">
+            <button class="ptype-btn active" id="compPctBtn" onclick="setCompType('pct')">%</button>
+            <button class="ptype-btn" id="compFlatBtn" onclick="setCompType('flat')">$</button>
+          </div>
         </div>
+        <div class="ig"><label for="compAttach">Comp Attach %</label><input type="text" id="compAttach" placeholder="50" value="50"></div>
+        <div class="ig" id="compRetPlatGroup" style="display:none;">
+          <label for="compRetPlatform" id="compRetPlatLabel">Comp Returns Portal ($/mo)</label>
+          <input type="text" id="compRetPlatform" placeholder="$">
+        </div>
+        <div class="ig"><label for="compRevShare" id="compRevShareLabel">Comp Rev Share %</label><input type="text" id="compRevShare" placeholder="0" value="0"></div>
       </div>
-      <div class="ig"><label for="compAttach">Comp Attach %</label><input type="text" id="compAttach" placeholder="50" value="50"></div>
-      <div class="ig"><label for="siPremRateM2">SI Premium %</label><input type="text" id="siPremRateM2" placeholder="3.00" value="3.00"></div>
-      <div class="ig"><label for="siAttachM2">SI Attach %</label><input type="text" id="siAttachM2" placeholder="68" value="68"></div>
-      <div class="ig"><label for="compRevShare">Rev Share % (Comp)</label><input type="text" id="compRevShare" placeholder="0" value="0"></div>
-      <div class="ig"><label for="revShareM2">Rev Share % (SI)</label><input type="text" id="revShareM2" placeholder="35" value="35"></div>
     </div>
 
-    <!-- Returns row (both modes) -->
-    <div class="returns-row" id="returnsRow">
-      <div class="ig" style="max-width:130px;">
-        <label for="returnsRate">Returns Rate %</label>
-        <input type="text" id="returnsRate" placeholder="0">
+    <!-- ShipInsure Inputs -->
+    <div class="input-section">
+      <div class="input-section-label">ShipInsure Inputs</div>
+      <div class="inputs-row">
+        <div class="ig"><label for="siPremRateM2">SI Premium %</label><input type="text" id="siPremRateM2" placeholder="3.00" value="3.00"></div>
+        <div class="ig"><label for="siAttachM2">SI Attach %</label><input type="text" id="siAttachM2" placeholder="68" value="68"></div>
+        <div class="ig" id="siRetPlatGroup" style="display:none;">
+          <label for="retPlatform">AfterShip Returns Portal ($/mo)</label>
+          <input type="text" id="retPlatform" placeholder="$">
+        </div>
+        <div class="ig"><label for="revShareM2">SI Rev Share %</label><input type="text" id="revShareM2" placeholder="35" value="35"></div>
       </div>
-      <div class="ig" style="max-width:160px;">
-        <label for="retPlatform">Returns Platform ($/mo)</label>
-        <input type="text" id="retPlatform" placeholder="$">
-      </div>
-      <div class="ig" id="compRetPlatGroup" style="max-width:190px;display:none;">
-        <label for="compRetPlatform">Comp Returns Platform ($/mo)</label>
-        <input type="text" id="compRetPlatform" placeholder="$">
+    </div>
+
+    <!-- Additional Merchant Inputs (collapsible) -->
+    <div class="input-section">
+      <button class="addl-toggle" onclick="toggleAddlInputs()">
+        <span class="addl-arrow" id="addlArrow">▶</span> Additional Merchant Inputs
+      </button>
+      <div id="addlBody" style="display:none;">
+        <div class="inputs-row" style="margin-top:4px;">
+          <div class="ig"><label for="cogsPercent">COGS %</label><input type="text" id="cogsPercent" placeholder="0"></div>
+          <div class="ig"><label for="csCost">Avg Ticket Cost</label><input type="text" id="csCost" placeholder="$"></div>
+        </div>
       </div>
     </div>
 
@@ -429,7 +456,7 @@ function setCompType(t) {
   _compType = t;
   el('compPctBtn').classList.toggle('active', t === 'pct');
   el('compFlatBtn').classList.toggle('active', t === 'flat');
-  el('compPremLbl').textContent = t === 'flat' ? 'Comp Premium $' : 'Comp Premium %';
+  syncCompLabels();
   recalc();
 }
 
@@ -438,31 +465,45 @@ function toggleReturns() {
   _retEnabled = !_retEnabled;
   el('retBtn').classList.toggle('active', _retEnabled);
   el('retIcon').textContent = _retEnabled ? '✓' : '＋';
-  syncReturnsRow();
+  syncReturnsFields();
   recalc();
 }
 function toggleCompReturns() {
   _cretEnabled = !_cretEnabled;
   el('cretBtn').classList.toggle('active', _cretEnabled);
   el('cretIcon').textContent = _cretEnabled ? '✓' : '＋';
-  el('compRetPlatGroup').style.display = _cretEnabled ? '' : 'none';
-  syncReturnsRow();
+  syncReturnsFields();
   recalc();
 }
-function syncReturnsRow() {
-  el('returnsRow').classList.toggle('visible', _retEnabled || _cretEnabled);
+function syncReturnsFields() {
+  const showCore = _retEnabled || _cretEnabled;
+  const show = (id, vis) => { const e = el(id); if (e) e.style.display = vis ? '' : 'none'; };
+  show('coreReturnsRateField', showCore);
+  show('coreAvgShippingField', showCore);
+  show('siRetPlatGroup',   _retEnabled);
+  show('compRetPlatGroup', _cretEnabled);
+}
+function syncCompLabels() {
+  const cname = vs('compName') || 'Comp';
+  const cdisplay = vs('compName') || 'Competitor';
+  if (el('cretBtnLabel'))     el('cretBtnLabel').textContent     = cname + ' Returns Offset';
+  if (el('compSectionLabel')) el('compSectionLabel').textContent = 'Merchant — ' + cdisplay + ' Inputs';
+  if (el('compRetPlatLabel')) el('compRetPlatLabel').textContent = cname + ' Returns Portal ($/mo)';
+  if (el('compPremLbl'))      el('compPremLbl').textContent      = cname + ' Premium ' + (_compType === 'flat' ? '$' : '%');
+  if (el('compRevShareLabel'))el('compRevShareLabel').textContent= cname + ' Rev Share %';
+}
+function toggleAddlInputs() {
+  const body  = el('addlBody');
+  const arrow = el('addlArrow');
+  const open  = body.style.display === 'none';
+  body.style.display    = open ? '' : 'none';
+  arrow.style.transform = open ? 'rotate(90deg)' : '';
 }
 
 // ── Mode switching ──
 function setMode(m) {
   _mode = m;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
-  el('m1Row').style.display = m === 'm1' ? 'flex' : 'none';
-  el('m2Row').style.display = m === 'm2' ? 'flex' : 'none';
-  el('cretBtn').style.display = m === 'm2' ? '' : 'none';
-  // If comp returns was on but we switch to m1, hide the extra input but keep state
-  if (m === 'm1') el('compRetPlatGroup').style.display = 'none';
-  else if (_cretEnabled) el('compRetPlatGroup').style.display = '';
   recalc();
 }
 
@@ -705,22 +746,25 @@ function calcM2() {
     `<div class="hb-badges"><div class="hb-badge">${rsLbl}</div><div class="hb-badge">${clLbl}</div></div>`;
 
   // Left card: Competitor
+  const compTotal = compNet + compRetOff;
   el('lcLabel').textContent = cname + ' Program';
   el('lcLabel').className   = 'card-prog-label c-comp';
-  el('lcTotal').textContent = fc(compNet);
-  el('lcTotal').className   = 'card-ttl ' + (compNet >= 0 ? 'c-comp' : 'c-neg');
+  el('lcTotal').textContent = fc(compTotal);
+  el('lcTotal').className   = 'card-ttl ' + (compTotal >= 0 ? 'c-comp' : 'c-neg');
   el('leftCard').className  = 'ccard cc-comp';
   el('lcRows').innerHTML =
     mi('Gross Premiums',   fc(compPremsIn)) +
     mi('Protected Claims', fn(compProtCl)) +
     mi('Funded Claims',    fc(compFunded), 'neg') +
     mi('Net Premium',      fc(compPost)) +
-    mi('Rev Share',        fc(compRevSh), 'pos');
+    mi('Rev Share',        fc(compRevSh), 'pos') +
+    (_cretEnabled ? mi('Returns Offset', fc(compRetOff), 'pos') : '');
 
   // Right card: SI
+  const siTotal = siNet + siRetOff;
   el('rcLabel').textContent = 'ShipInsure Program';
   el('rcLabel').className   = 'card-prog-label c-si';
-  el('rcTotal').textContent = fc(siNet);
+  el('rcTotal').textContent = fc(siTotal);
   el('rcTotal').className   = 'card-ttl c-si';
   el('rightCard').className = 'ccard cc-si';
   el('rcRows').innerHTML =
@@ -728,7 +772,8 @@ function calcM2() {
     mi('Protected Claims', fn(siProtCl)) +
     mi('SI Funded Claims', fc(siFunded),  'neg') +
     mi('Net Premiums',     fc(siPost)) +
-    mi('Rev Share',        fc(siRevSh),   'pos');
+    mi('Rev Share',        fc(siRevSh),   'pos') +
+    (_retEnabled ? mi('SI Returns Offset', fc(siRetOff), 'pos') : '');
 
   _bd = {
     mode:'m2', isAnn, mul, mo, orders, aov, claimsP, ship, fundedPer, cname,
@@ -862,6 +907,8 @@ function loadSaved() {
   if (p.get('cpt') === 'flat') setCompType('flat');
   if (p.get('ret')  === '1' && !_retEnabled)  toggleReturns();
   if (p.get('cret') === '1' && !_cretEnabled) toggleCompReturns();
+  syncCompLabels();
+  syncReturnsFields();
   recalc();
 }
 
@@ -885,6 +932,8 @@ function resetAll() {
   if (_diyType  !== 'pct') setDiyType('pct');
   if (_compType !== 'pct') setCompType('pct');
   el('linkRow').classList.remove('visible');
+  syncCompLabels();
+  syncReturnsFields();
   setMode('m2');
 }
 
