@@ -311,6 +311,22 @@ body {
       <div class="ig"><label for="csCost">Avg Ticket Cost</label><input type="text" id="csCost" placeholder="$"></div>
     </div>
 
+    <!-- Mode 1 inputs (hidden — self-insure tab removed) -->
+    <div class="inputs-row" id="m1Row" style="display:none;">
+      <div class="ig">
+        <label id="diyPremLbl">DIY Premium %</label>
+        <div class="prem-wrap">
+          <input type="text" id="diyPremRate" placeholder="0">
+          <button class="ptype-btn active" id="diyPctBtn" onclick="setDiyType('pct')">%</button>
+          <button class="ptype-btn"        id="diyFlatBtn" onclick="setDiyType('flat')">$</button>
+        </div>
+      </div>
+      <div class="ig"><label for="diyAttach">DIY Attach %</label><input type="text" id="diyAttach" placeholder="60" value="60"></div>
+      <div class="ig"><label for="siPremRate">SI Premium %</label><input type="text" id="siPremRate" placeholder="3.00" value="3.00"></div>
+      <div class="ig"><label for="siAttach">SI Attach %</label><input type="text" id="siAttach" placeholder="68" value="68"></div>
+      <div class="ig"><label for="revShare">Net Rev Share %</label><input type="text" id="revShare" placeholder="35" value="35"></div>
+    </div>
+
     <!-- Mode 2 inputs -->
     <div class="inputs-row" id="m2Row" style="display:none;">
       <div class="ig" style="min-width:100px;max-width:130px;">
