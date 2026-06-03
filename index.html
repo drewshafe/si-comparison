@@ -46,12 +46,12 @@ body {
 /* ── Outputs strip ── */
 .outputs-strip {
   background:#f8f9fa; border-bottom:1px solid #e9ecef;
-  padding:4px 14px 10px;  /* reduced top so inner padding absorbs bubble space */
+  padding:4px 14px 10px;
 }
 .outputs-inner {
   display:flex; gap:8px;
   overflow-x:auto; overflow-y:visible;
-  padding-top:10px;  /* room for bubbles above cards */
+  padding-top:10px;
 }
 .output-metric {
   background:white; border:1px solid #dee2e6; border-radius:8px;
@@ -116,6 +116,17 @@ body {
 .cm-val { font-weight:600; color:#212529; }
 .cm-val.pos { color:#198754; }
 .cm-val.neg { color:#dc3545; }
+.cm-val.warn { color:#e67e22; }
+
+/* Split premium callout */
+.split-callout {
+  background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;
+  padding: 10px 14px; margin-top: 12px; font-size: 0.8em; line-height: 1.45;
+  color: #664d03;
+}
+.split-callout strong { color: #000; }
+.split-callout .sc-headline { font-weight: 800; font-size: 1.05em; margin-bottom: 4px; }
+.split-callout .sc-math { font-family: monospace; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; }
 
 /* ── Inputs strip ── */
 .inputs-strip {
@@ -180,6 +191,15 @@ body {
   transition:all 0.15s;
 }
 .cret-btn.active { background:#7c3aed; color:white; }
+/* Model toggle button */
+.model-btn {
+  padding:5px 10px; font-size:0.74em; font-weight:700;
+  border:1px solid #dc3545; border-radius:6px;
+  background:white; color:#dc3545; cursor:pointer;
+  display:flex; align-items:center; gap:4px; white-space:nowrap;
+  transition:all 0.15s;
+}
+.model-btn.active { background:#dc3545; color:white; }
 /* Primary button */
 .btn-gen {
   padding:6px 14px; background:#4a5fc1; color:white;
@@ -236,6 +256,7 @@ body {
 .bd-title.t-shared { color:#6c757d; }
 .bd-title.t-neg    { color:#e67e22; }
 .bd-title.t-pos    { color:#4a5fc1; }
+.bd-title.t-warn   { color:#dc3545; }
 .bd-row {
   display:grid; grid-template-columns:1fr auto auto;
   gap:8px; padding:3px 0; font-size:0.74em;
@@ -299,6 +320,8 @@ body {
         <div id="rcRows"></div>
       </div>
     </div>
+    <!-- Split premium callout — only visible when split model is active -->
+    <div class="split-callout" id="splitCallout" style="display:none;"></div>
   </div>
 
   <!-- ── Inputs strip ── -->
@@ -306,6 +329,9 @@ body {
     <div class="inputs-header">
       <div class="inputs-title">Inputs</div>
       <div class="inputs-actions">
+        <button class="model-btn" id="modelBtn" onclick="toggleSplitModel()">
+          <span id="modelIcon">＋</span> Split Premium Model
+        </button>
         <button class="ret-btn" id="retBtn" onclick="toggleReturns()">
           <span id="retIcon">＋</span> SI Returns Offset
         </button>
@@ -333,7 +359,14 @@ body {
       <div class="inputs-row">
         <div class="ig"><label for="orders">Orders</label><input type="text" id="orders" placeholder="0"></div>
         <div class="ig"><label for="aov">AOV</label><input type="text" id="aov" placeholder="$"></div>
-        <div class="ig"><label for="claimsRate">Claims Rate %</label><input type="text" id="claimsRate" placeholder="0"></div>
+        <div class="ig">
+          <label for="claimsRate" id="claimsLbl">Claims Rate %</label>
+          <div class="prem-wrap">
+            <input type="text" id="claimsRate" placeholder="0">
+            <button class="ptype-btn active" id="claimsPctBtn" onclick="setClaimsType('pct')">%</button>
+            <button class="ptype-btn" id="claimsNumBtn" onclick="setClaimsType('num')">#</button>
+          </div>
+        </div>
         <div class="ig" id="coreReturnsRateField" style="display:none;"><label for="returnsRate">Returns Rate %</label><input type="text" id="returnsRate" placeholder="0"></div>
         <div class="ig" id="coreAvgShippingField" style="display:none;"><label for="avgShipping">Avg Shipping</label><input type="text" id="avgShipping" placeholder="$"></div>
       </div>
@@ -360,7 +393,22 @@ body {
           <label for="compRetPlatform" id="compRetPlatLabel">Comp Returns Portal ($/mo)</label>
           <input type="text" id="compRetPlatform" placeholder="$">
         </div>
-        <div class="ig"><label for="compRevShare" id="compRevShareLabel">Comp Rev Share %</label><input type="text" id="compRevShare" placeholder="0" value="0"></div>
+        <div class="ig" id="compRetLabelGroup" style="display:none;">
+          <label for="compRetLabel" id="compRetLabelLbl">Comp Return Label Cost $</label>
+          <input type="text" id="compRetLabel" placeholder="$">
+        </div>
+        <div class="ig" id="compRevShareGroup"><label for="compRevShare" id="compRevShareLabel">Comp Rev Share %</label><input type="text" id="compRevShare" placeholder="0" value="0"></div>
+      </div>
+      <!-- Split premium inputs — shown when split model is active -->
+      <div class="inputs-row" id="splitInputsRow" style="display:none; margin-top:6px;">
+        <div class="ig" style="max-width:200px;">
+          <label for="merchantCut" id="merchantCutLabel">Your Cut per Comp Premium $</label>
+          <div class="prem-wrap">
+            <input type="text" id="merchantCut" placeholder="1.00" value="1.00">
+            <button class="ptype-btn active" id="mcutFlatBtn" onclick="setMcutType('flat')">$</button>
+            <button class="ptype-btn" id="mcutPctBtn" onclick="setMcutType('pct')">%</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -373,6 +421,10 @@ body {
         <div class="ig" id="siRetPlatGroup" style="display:none;">
           <label for="retPlatform">AfterShip Returns Portal ($/mo)</label>
           <input type="text" id="retPlatform" placeholder="$">
+        </div>
+        <div class="ig" id="siRetLabelGroup" style="display:none;">
+          <label for="siRetLabel">SI Return Label Cost $</label>
+          <input type="text" id="siRetLabel" placeholder="$">
         </div>
         <div class="ig"><label for="revShareM2">SI Rev Share %</label><input type="text" id="revShareM2" placeholder="35" value="35"></div>
       </div>
@@ -402,7 +454,7 @@ body {
   <div class="calc-breakdown">
     <button class="bd-toggle" onclick="toggleBd(this)">
       <span class="bd-arrow" id="bdArrow">▶</span>
-      📋 Show Calculation Breakdown
+      Show Calculation Breakdown
     </button>
     <div class="bd-body" id="bdBody">
       <div class="bd-shared">
@@ -429,6 +481,9 @@ body {
 let _mode           = 'm2';
 let _retEnabled     = false;
 let _cretEnabled    = false;
+let _splitModel     = false;   // Split Premium model (Redo-style)
+let _mcutType       = 'flat'; // 'flat' | 'pct' — merchant cut input type
+let _claimsType     = 'pct';  // 'pct' | 'num'
 let _diyType        = 'pct';   // 'pct' | 'flat'
 let _compType       = 'pct';
 let _bd             = {};
@@ -460,6 +515,37 @@ function setCompType(t) {
   recalc();
 }
 
+// ── Claims type toggle ──
+function setClaimsType(t) {
+  _claimsType = t;
+  el('claimsPctBtn').classList.toggle('active', t === 'pct');
+  el('claimsNumBtn').classList.toggle('active', t === 'num');
+  el('claimsLbl').textContent = t === 'num' ? 'Number of Claims' : 'Claims Rate %';
+  el('claimsRate').placeholder = t === 'num' ? '0' : '0';
+  recalc();
+}
+
+// ── Merchant cut type toggle ──
+function setMcutType(t) {
+  _mcutType = t;
+  el('mcutFlatBtn').classList.toggle('active', t === 'flat');
+  el('mcutPctBtn').classList.toggle('active', t === 'pct');
+  syncCompLabels();
+  recalc();
+}
+
+// ── Split model toggle ──
+function toggleSplitModel() {
+  _splitModel = !_splitModel;
+  el('modelBtn').classList.toggle('active', _splitModel);
+  el('modelIcon').textContent = _splitModel ? '✓' : '＋';
+  el('splitInputsRow').style.display = _splitModel ? 'flex' : 'none';
+  // In split model, comp rev share doesn't apply — competitor keeps premiums, not the merchant
+  el('compRevShareGroup').style.display = _splitModel ? 'none' : '';
+  syncCompLabels();
+  recalc();
+}
+
 // ── Returns toggles ──
 function toggleReturns() {
   _retEnabled = !_retEnabled;
@@ -480,8 +566,10 @@ function syncReturnsFields() {
   const show = (id, vis) => { const e = el(id); if (e) e.style.display = vis ? '' : 'none'; };
   show('coreReturnsRateField', showCore);
   show('coreAvgShippingField', showCore);
-  show('siRetPlatGroup',   _retEnabled);
-  show('compRetPlatGroup', _cretEnabled);
+  show('siRetPlatGroup',    _retEnabled);
+  show('siRetLabelGroup',   _retEnabled);
+  show('compRetPlatGroup',  _cretEnabled);
+  show('compRetLabelGroup', _cretEnabled);
 }
 function syncCompLabels() {
   const cname = vs('compName') || 'Comp';
@@ -491,6 +579,8 @@ function syncCompLabels() {
   if (el('compRetPlatLabel')) el('compRetPlatLabel').textContent = cname + ' Returns Portal ($/mo)';
   if (el('compPremLbl'))      el('compPremLbl').textContent      = cname + ' Premium ' + (_compType === 'flat' ? '$' : '%');
   if (el('compRevShareLabel'))el('compRevShareLabel').textContent= cname + ' Rev Share %';
+  if (el('merchantCutLabel')) el('merchantCutLabel').textContent = 'Your Cut per ' + cname + ' Premium ' + (_mcutType === 'pct' ? '%' : '$');
+  if (el('compRetLabelLbl')) el('compRetLabelLbl').textContent = cname + ' Return Label Cost $';
 }
 function toggleAddlInputs() {
   const body  = el('addlBody');
@@ -531,14 +621,13 @@ function recalc() {
   if (el('bdBody').classList.contains('open')) renderBd();
 }
 
-// ── Mode 1: Self-Insure vs SI ──
+// ── Mode 1: Self-Insure vs SI (unchanged) ──
 function calcM1() {
   const isAnn = vs('timeframe') === 'annual';
   const mul   = isAnn ? 12 : 1;
 
   const mo          = vn('orders');
   const aov         = vn('aov');
-  const claimsP     = vn('claimsRate') / 100;
   const cogsP       = vn('cogsPercent') / 100;
   const ship        = vn('avgShipping');
   const cs          = vn('csCost');
@@ -549,23 +638,22 @@ function calcM1() {
   const rsP         = vn('revShare') / 100;
 
   const orders = mo * mul;
+  const claimsRaw = vn('claimsRate');
+  const claimsP   = _claimsType === 'num' ? (orders > 0 ? claimsRaw / orders : 0) : claimsRaw / 100;
+  const claimsNum = _claimsType === 'num' ? claimsRaw : orders * claimsP;
 
-  // Avg premiums
   const diyAvgP = _diyType === 'flat' ? diyPremRaw : aov * (diyPremRaw / 100);
   const siAvgP  = aov * siPremP;
 
-  // Cost formulas
-  const diyClaimCostPer = (aov * cogsP) + ship + cs;   // merchant pays COGS + shipping + CS
-  const siFundedPer     = aov + ship;                   // SI funds AOV + shipping
+  const diyClaimCostPer = (aov * cogsP) + ship + cs;
+  const siFundedPer     = aov + ship;
 
-  // DIY program
   const diyProt    = orders * diyAttP;
   const diyPremsIn = diyProt * diyAvgP;
   const diyProtCl  = diyProt * claimsP;
   const diyClCost  = diyProtCl * diyClaimCostPer;
   const diyNet     = diyPremsIn - diyClCost;
 
-  // SI program
   const siProt     = orders * siAttP;
   const siPremsIn  = siProt * siAvgP;
   const siProtCl   = siProt * claimsP;
@@ -574,30 +662,37 @@ function calcM1() {
   const siRevSh    = Math.max(0, postClaim) * rsP;
   const siNet      = postClaim + siRevSh;
 
-  // Returns offset
   let retOffset = 0, retBurden = 0;
   let totRet = 0, retLabTot = 0, retPlatTot = 0, siCovLab = 0, siCovPlat = 0;
+  let m1LabelCost = 0, m1NonOptRet = 0, m1NonOptLabCost = 0;
   if (_retEnabled) {
     const retP    = vn('returnsRate') / 100;
     const platMo  = vn('retPlatform');
-    const labCost = ship;  // return label cost = avg shipping
+    m1LabelCost   = vn('siRetLabel') || ship;
     const platPer = platMo * mul;
     totRet    = orders * retP;
-    retLabTot = totRet * labCost;
+    retLabTot = totRet * m1LabelCost;
     retPlatTot = platPer;
     retBurden = retLabTot + retPlatTot;
     const siProtRet = siProt * retP;
-    siCovLab  = siProtRet * labCost;
+    siCovLab  = siProtRet * m1LabelCost;
     siCovPlat = platPer;
-    retOffset = siCovLab + siCovPlat;
+    // Non-opted-in return labels
+    m1NonOptRet = (orders - siProt) * retP;
+    m1NonOptLabCost = m1NonOptRet * m1LabelCost;
+    retOffset = siCovLab + siCovPlat - m1NonOptLabCost;
   }
 
   const advantage = (siNet + retOffset) - (diyNet - retBurden);
   const attachLift = (siAttP - diyAttP) * 100;
 
-  // Outputs
+  el('splitCallout').style.display = 'none';
+
   el('outputsInner').innerHTML =
     omP(fn(mo), 'Monthly Orders') +
+    (_claimsType === 'num'
+      ? om('Claims Rate', fpx(claimsP * 100), '', null)
+      : om('Total Claims', fn(claimsNum), '', null)) +
     om('DIY Protected Orders',   fn(diyProt),    'c-diy',  null) +
     om('SI Protected Orders',    fn(siProt),     'c-si',   siProt,    diyProt) +
     om('Avg DIY Premium',        fcc(diyAvgP),   'c-diy',  null) +
@@ -605,7 +700,6 @@ function calcM1() {
     om('DIY Premiums Collected', fc(diyPremsIn), 'c-diy',  null) +
     om('SI Premiums Collected',  fc(siPremsIn),  'c-si',   siPremsIn, diyPremsIn);
 
-  // Headline
   el('hbLabel').textContent = 'SI Direct Financial Advantage';
   el('hbValue').textContent = fc(advantage);
   if (Math.abs(attachLift) > 0.05) {
@@ -618,7 +712,6 @@ function calcM1() {
     el('hbSub').innerHTML = '';
   }
 
-  // Left card: DIY
   el('lcLabel').textContent = 'Self-Insure Program';
   el('lcLabel').className   = 'card-prog-label c-diy';
   el('lcTotal').textContent = fc(diyNet);
@@ -630,7 +723,6 @@ function calcM1() {
     mi('Claims Cost (COGS+Ship+CS)', fc(diyClCost), 'neg') +
     mi('Net Premium',            fc(diyNet), diyNet >= 0 ? 'pos' : 'neg');
 
-  // Right card: SI
   el('rcLabel').textContent = 'ShipInsure Program';
   el('rcLabel').className   = 'card-prog-label c-si';
   el('rcTotal').textContent = fc(siNet);
@@ -643,7 +735,7 @@ function calcM1() {
     mi('Net Premiums (incl. Rev Share)', fc(siNet),  siNet >= 0 ? 'pos' : 'neg');
 
   _bd = {
-    mode:'m1', isAnn, mul, mo, orders, aov, claimsP, cogsP, ship, cs,
+    mode:'m1', isAnn, mul, mo, orders, aov, claimsP, claimsNum, cogsP, ship, cs,
     diyClaimCostPer, siFundedPer, diyAvgP, diyAttP, diyProt, diyPremsIn, diyProtCl, diyClCost, diyNet,
     siAvgP, siAttP, siProt, siPremsIn, siProtCl, siFunded, postClaim, siRevSh, siNet, rsP,
     attachLift, advantage,
@@ -660,7 +752,6 @@ function calcM2() {
 
   const mo          = vn('orders');
   const aov         = vn('aov');
-  const claimsP     = vn('claimsRate') / 100;
   const cogsP       = vn('cogsPercent') / 100;
   const ship        = vn('avgShipping');
   const cs          = vn('csCost');
@@ -672,21 +763,15 @@ function calcM2() {
   const siRsP       = vn('revShareM2') / 100;
 
   const orders = mo * mul;
+  const claimsRaw = vn('claimsRate');
+  const claimsP   = _claimsType === 'num' ? (orders > 0 ? claimsRaw / orders : 0) : claimsRaw / 100;
+  const claimsNum = _claimsType === 'num' ? claimsRaw : orders * claimsP;
 
   const compAvgP = _compType === 'flat' ? compPremRaw : aov * (compPremRaw / 100);
   const siAvgP   = aov * siPremP;
-  const fundedPer = aov + ship;  // both fund at AOV + shipping
+  const fundedPer = aov + ship;  // SI funds AOV + shipping
 
-  // Competitor program
-  const compProt   = orders * compAttP;
-  const compPremsIn = compProt * compAvgP;
-  const compProtCl  = compProt * claimsP;
-  const compFunded  = compProtCl * fundedPer;
-  const compPost    = compPremsIn - compFunded;
-  const compRevSh   = Math.max(0, compPost) * compRsP;
-  const compNet     = compPost + compRevSh;
-
-  // SI program
+  // SI program (same regardless of split model)
   const siProt    = orders * siAttP;
   const siPremsIn = siProt * siAvgP;
   const siProtCl  = siProt * claimsP;
@@ -695,9 +780,48 @@ function calcM2() {
   const siRevSh   = Math.max(0, siPost) * siRsP;
   const siNet     = siPost + siRevSh;
 
+  // Competitor program — branching on split model
+  const compProt    = orders * compAttP;
+  const compPremsIn = compProt * compAvgP;
+  const compProtCl  = compProt * claimsP;
+
+  let compNet, compFunded, compPost, compRevSh;
+  // Split model variables
+  let merchantCutPer = 0, compKeepsPer = 0, merchantKeepsTotal = 0, compKeepsTotal = 0;
+  let merchantClaimCost = 0, merchantClaimCostPer = 0;
+
+  if (_splitModel) {
+    // ── SPLIT PREMIUM MODEL (Redo-style) ──
+    // Competitor keeps (avgPremium - merchantCut) per protected order
+    // Merchant gets merchantCut per protected order to self-fund claims
+    merchantCutPer     = vn('merchantCut');
+    compKeepsPer       = Math.max(0, compAvgP - merchantCutPer);
+    merchantKeepsTotal = compProt * merchantCutPer;
+    compKeepsTotal     = compProt * compKeepsPer;
+
+    // Merchant self-funds claims: COGS + shipping + CS per claim
+    merchantClaimCostPer = (aov * cogsP) + ship + cs;
+    merchantClaimCost    = compProtCl * merchantClaimCostPer;
+
+    // Merchant net = what they keep from premiums minus what they pay for claims
+    compNet    = merchantKeepsTotal - merchantClaimCost;
+    compFunded = 0;  // competitor doesn't fund claims
+    compPost   = 0;
+    compRevSh  = 0;
+  } else {
+    // ── STANDARD MODEL ──
+    compFunded  = compProtCl * fundedPer;
+    compPost    = compPremsIn - compFunded;
+    compRevSh   = Math.max(0, compPost) * compRsP;
+    compNet     = compPost + compRevSh;
+  }
+
   // Returns
   let siRetOff = 0, compRetOff = 0;
   let totRet = 0, siCovLab = 0, siCovPlat = 0, compCovLab = 0, compCovPlat = 0;
+  let siLabelCost = 0, compLabelCost = 0;
+  let siNonOptRet = 0, compNonOptRet = 0;  // non-opted-in return label burden
+  let siNonOptLabCost = 0, compNonOptLabCost = 0;
   const retP = vn('returnsRate') / 100;
   if (_retEnabled || _cretEnabled) {
     totRet = orders * retP;
@@ -705,62 +829,138 @@ function calcM2() {
   if (_retEnabled) {
     const platMo  = vn('retPlatform');
     const platPer = platMo * mul;
-    siCovLab  = (siProt * retP) * ship;
+    siLabelCost = vn('siRetLabel') || ship;  // fall back to avg shipping if blank
+    const siProtRet = siProt * retP;
+    siCovLab  = siProtRet * siLabelCost;
     siCovPlat = platPer;
-    siRetOff  = siCovLab + siCovPlat;
+    // Non-opted-in customers still return — merchant pays their labels
+    siNonOptRet = (orders - siProt) * retP;
+    siNonOptLabCost = siNonOptRet * siLabelCost;
+    siRetOff  = siCovLab + siCovPlat - siNonOptLabCost;
   }
   if (_cretEnabled) {
     const cplatMo  = vn('compRetPlatform');
     const cplatPer = cplatMo * mul;
-    compCovLab  = (compProt * retP) * ship;
+    compLabelCost = vn('compRetLabel') || ship;  // fall back to avg shipping if blank
+    const compProtRet = compProt * retP;
+    compCovLab  = compProtRet * compLabelCost;
     compCovPlat = cplatPer;
-    compRetOff  = compCovLab + compCovPlat;
+    // Non-opted-in customers still return — merchant pays their labels
+    compNonOptRet = (orders - compProt) * retP;
+    compNonOptLabCost = compNonOptRet * compLabelCost;
+    compRetOff  = compCovLab + compCovPlat - compNonOptLabCost;
   }
 
   const advantage = (siNet + siRetOff) - (compNet + compRetOff);
 
-  // Diff badges
-  const rsDiffAmt  = siRevSh - compRevSh;
-  const clDiffPct  = compFunded > 0 ? ((siFunded - compFunded) / compFunded) * 100 : 0;
+  // ── Outputs strip ──
+  // Inverse claims metric: show what the user didn't input
+  const claimsMetric = _claimsType === 'num'
+    ? om('Claims Rate', fpx(claimsP * 100), '', null)
+    : om('Total Claims', fn(claimsNum), '', null);
 
-  // Outputs
-  el('outputsInner').innerHTML =
-    omP(fn(mo), 'Orders') +
-    om(cname + ' Protected Orders',   fn(compProt),     'c-comp', null) +
-    om('Avg ' + cname + ' Premium',   fcc(compAvgP),    'c-comp', null) +
-    om(cname + ' Premiums Collected', fc(compPremsIn),  'c-comp', null) +
-    om('SI Protected Orders',         fn(siProt),       'c-si',   siProt,    compProt) +
-    om('Avg SI Premium',              fcc(siAvgP),      'c-si',   siAvgP,    compAvgP) +
-    om('SI Premiums Collected',       fc(siPremsIn),    'c-si',   siPremsIn, compPremsIn);
+  if (_splitModel) {
+    el('outputsInner').innerHTML =
+      omP(fn(mo), 'Orders') +
+      claimsMetric +
+      om(cname + ' Protected Orders',   fn(compProt),          'c-comp', null) +
+      om('Avg ' + cname + ' Premium',   fcc(compAvgP),         'c-comp', null) +
+      om(cname + ' Keeps per Order',    fcc(compKeepsPer),     'c-comp', null) +
+      om('Your Cut per Order',           fcc(merchantCutPer),   'c-comp', null) +
+      om('SI Protected Orders',          fn(siProt),            'c-si',   siProt,    compProt) +
+      om('Avg SI Premium',               fcc(siAvgP),           'c-si',   siAvgP,    compAvgP) +
+      om('SI Premiums Collected',         fc(siPremsIn),         'c-si',   siPremsIn, compPremsIn);
+  } else {
+    el('outputsInner').innerHTML =
+      omP(fn(mo), 'Orders') +
+      claimsMetric +
+      om(cname + ' Protected Orders',   fn(compProt),     'c-comp', null) +
+      om('Avg ' + cname + ' Premium',   fcc(compAvgP),    'c-comp', null) +
+      om(cname + ' Premiums Collected', fc(compPremsIn),  'c-comp', null) +
+      om('SI Protected Orders',         fn(siProt),       'c-si',   siProt,    compProt) +
+      om('Avg SI Premium',              fcc(siAvgP),      'c-si',   siAvgP,    compAvgP) +
+      om('SI Premiums Collected',       fc(siPremsIn),    'c-si',   siPremsIn, compPremsIn);
+  }
 
-  // Headline
+  // ── Headline ──
   el('hbLabel').textContent = 'SI Advantage vs ' + cname;
   el('hbValue').textContent = fc(advantage);
-  const rsLbl = rsDiffAmt >= 0
-    ? `↑ ${fc(rsDiffAmt)} more rev share`
-    : `↓ ${fc(Math.abs(rsDiffAmt))} less rev share`;
-  const clLbl = clDiffPct >= 0
-    ? `↑ ${Math.abs(clDiffPct).toFixed(1)}% more claims funded`
-    : `↓ ${Math.abs(clDiffPct).toFixed(1)}% fewer claims funded`;
-  el('hbSub').innerHTML =
-    `<div class="hb-badges"><div class="hb-badge">${rsLbl}</div><div class="hb-badge">${clLbl}</div></div>`;
 
-  // Left card: Competitor
+  if (_splitModel) {
+    // Badges for split model
+    const premSplitPct = compAvgP > 0 ? (compKeepsPer / compAvgP * 100) : 0;
+    const yourCutPct   = compAvgP > 0 ? (merchantCutPer / compAvgP * 100) : 0;
+    el('hbSub').innerHTML =
+      `<div class="hb-badges">` +
+        `<div class="hb-badge">${cname} keeps ${premSplitPct.toFixed(0)}% of every premium</div>` +
+        `<div class="hb-badge">You get ${yourCutPct.toFixed(0)}% to self-fund claims</div>` +
+        `<div class="hb-badge">SI rev share: ${fc(siRevSh)}</div>` +
+      `</div>`;
+  } else {
+    const rsDiffAmt  = siRevSh - compRevSh;
+    const clDiffPct  = compFunded > 0 ? ((siFunded - compFunded) / compFunded) * 100 : 0;
+    const rsLbl = rsDiffAmt >= 0
+      ? `↑ ${fc(rsDiffAmt)} more rev share`
+      : `↓ ${fc(Math.abs(rsDiffAmt))} less rev share`;
+    const clLbl = clDiffPct >= 0
+      ? `↑ ${Math.abs(clDiffPct).toFixed(1)}% more claims funded`
+      : `↓ ${Math.abs(clDiffPct).toFixed(1)}% fewer claims funded`;
+    el('hbSub').innerHTML =
+      `<div class="hb-badges"><div class="hb-badge">${rsLbl}</div><div class="hb-badge">${clLbl}</div></div>`;
+  }
+
+  // ── Left card: Competitor ──
   const compTotal = compNet + compRetOff;
-  el('lcLabel').textContent = cname + ' Program';
+  el('lcLabel').textContent = cname + ' Program' + (_splitModel ? ' (Split Premium)' : '');
   el('lcLabel').className   = 'card-prog-label c-comp';
   el('lcTotal').textContent = fc(compTotal);
   el('lcTotal').className   = 'card-ttl ' + (compTotal >= 0 ? 'c-comp' : 'c-neg');
   el('leftCard').className  = 'ccard cc-comp';
-  el('lcRows').innerHTML =
-    mi('Gross Premiums',   fc(compPremsIn)) +
-    mi('Protected Claims', fn(compProtCl)) +
-    mi('Funded Claims',    fc(compFunded), 'neg') +
-    mi('Net Premium',      fc(compPost)) +
-    mi('Rev Share',        fc(compRevSh), 'pos') +
-    (_cretEnabled ? mi('Returns Offset', fc(compRetOff), 'pos') : '');
 
-  // Right card: SI
+  // Build returns line items for comp card
+  let compRetRows = '';
+  if (_cretEnabled) {
+    compRetRows =
+      mi('Return Label Cost', fcc(compLabelCost) + '/label') +
+      mi('Opted-In Return Labels', fc(compCovLab), 'pos') +
+      mi('Returns Portal', fc(compCovPlat), 'pos') +
+      mi('Non-Opt-In Returns (' + fn(compNonOptRet) + ')', fc(compNonOptLabCost), 'neg') +
+      mi('Net Returns Offset', fc(compRetOff), compRetOff >= 0 ? 'pos' : 'neg');
+  }
+
+  if (_splitModel) {
+    el('lcRows').innerHTML =
+      mi('Customer Pays (Premium)',           fcc(compAvgP)) +
+      mi(cname + ' Keeps',                    fcc(compKeepsPer) + '/order', 'neg') +
+      mi('You Keep',                           fcc(merchantCutPer) + '/order') +
+      mi('Your Premium Revenue',               fc(merchantKeepsTotal)) +
+      mi(cname + ' Takes Home',               fc(compKeepsTotal), 'neg') +
+      mi('Protected Claims',                   fn(compProtCl)) +
+      mi('Your Claims Cost (COGS+Ship+CS)',   fc(merchantClaimCost), 'neg') +
+      mi('Your Net (Premium − Claims)',        fc(compNet), compNet >= 0 ? 'pos' : 'neg') +
+      compRetRows;
+  } else {
+    el('lcRows').innerHTML =
+      mi('Gross Premiums',   fc(compPremsIn)) +
+      mi('Protected Claims', fn(compProtCl)) +
+      mi('Funded Claims',    fc(compFunded), 'neg') +
+      mi('Net Premium',      fc(compPost)) +
+      mi('Rev Share',        fc(compRevSh), 'pos') +
+      compRetRows;
+  }
+
+  // Build returns line items for SI card
+  let siRetRows = '';
+  if (_retEnabled) {
+    siRetRows =
+      mi('Return Label Cost', fcc(siLabelCost) + '/label') +
+      mi('Opted-In Return Labels', fc(siCovLab), 'pos') +
+      mi('Returns Portal', fc(siCovPlat), 'pos') +
+      mi('Non-Opt-In Returns (' + fn(siNonOptRet) + ')', fc(siNonOptLabCost), 'neg') +
+      mi('Net Returns Offset', fc(siRetOff), siRetOff >= 0 ? 'pos' : 'neg');
+  }
+
+  // ── Right card: SI ──
   const siTotal = siNet + siRetOff;
   el('rcLabel').textContent = 'ShipInsure Program';
   el('rcLabel').className   = 'card-prog-label c-si';
@@ -773,14 +973,38 @@ function calcM2() {
     mi('SI Funded Claims', fc(siFunded),  'neg') +
     mi('Net Premiums',     fc(siPost)) +
     mi('Rev Share',        fc(siRevSh),   'pos') +
-    (_retEnabled ? mi('SI Returns Offset', fc(siRetOff), 'pos') : '');
+    siRetRows;
+
+  // ── Split Premium Callout ──
+  if (_splitModel && compAvgP > 0 && orders > 0) {
+    const premSplitPct = (compKeepsPer / compAvgP * 100).toFixed(0);
+    el('splitCallout').style.display = '';
+    el('splitCallout').innerHTML =
+      `<div class="sc-headline">How ${cname}'s Split Premium Works Against You</div>` +
+      `Your customers pay <strong>${fcc(compAvgP)}</strong> per order for "protection + returns." ` +
+      `But <strong>${cname} keeps ${fcc(compKeepsPer)}</strong> (${premSplitPct}%) of that premium. ` +
+      `You only receive <strong>${fcc(merchantCutPer)}</strong> per protected order — and you still handle claims yourself.<br><br>` +
+      `<strong>The math:</strong> ` +
+      `<span class="sc-math">${fn(compProtCl)} claims × ${fc(merchantClaimCostPer)} avg cost = ${fc(merchantClaimCost)} in claims</span> ` +
+      `vs. <span class="sc-math">${fn(compProt)} orders × ${fcc(merchantCutPer)} your cut = ${fc(merchantKeepsTotal)} to cover them</span>` +
+      (merchantClaimCost > merchantKeepsTotal
+        ? `<br><br><strong>You're underwater by ${fc(merchantClaimCost - merchantKeepsTotal)}.</strong> ${cname} collects ${fc(compKeepsTotal)} risk-free while you absorb the loss.`
+        : `<br><br>You net ${fc(merchantKeepsTotal - merchantClaimCost)} — but ${cname} takes home ${fc(compKeepsTotal)} risk-free for doing nothing on claims.`) +
+      `<br><br><strong>With ShipInsure:</strong> SI funds claims at full AOV + shipping (${fc(fundedPer)}/claim), ` +
+      `you earn ${fc(siRevSh)} in rev share, and you never touch a claim.`;
+  } else {
+    el('splitCallout').style.display = 'none';
+  }
 
   _bd = {
-    mode:'m2', isAnn, mul, mo, orders, aov, claimsP, ship, fundedPer, cname,
+    mode:'m2', isAnn, mul, mo, orders, aov, claimsP, claimsNum, cogsP, ship, cs, fundedPer, cname,
     compAvgP, compAttP, compProt, compPremsIn, compProtCl, compFunded, compPost, compRevSh, compNet, compRsP,
     siAvgP, siAttP, siProt, siPremsIn, siProtCl, siFunded, siPost, siRevSh, siNet, siRsP,
     advantage, retEnabled:_retEnabled, cretEnabled:_cretEnabled,
     totRet, siCovLab, siCovPlat, siRetOff, compCovLab, compCovPlat, compRetOff,
+    splitModel:_splitModel, merchantCutPer, compKeepsPer, merchantKeepsTotal, compKeepsTotal,
+    merchantClaimCost, merchantClaimCostPer,
+    siLabelCost, compLabelCost, siNonOptRet, compNonOptRet, siNonOptLabCost, compNonOptLabCost,
     ready:true
   };
 }
@@ -804,6 +1028,7 @@ function renderBd() {
       r('Monthly Orders',     '',                        fn(_bd.mo)) +
       r('AOV',                '',                        fc(_bd.aov)) +
       r('Claims Rate',        '',                        fp(_bd.claimsP * 100)) +
+      r('Total Claims',       'Orders × Rate',           fn(_bd.claimsNum)) +
       r('COGS %',             '',                        fp(_bd.cogsP * 100)) +
       r('Avg Shipping',       '',                        fc(_bd.ship)) +
       r('CS Ticket Cost',     '',                        fc(_bd.cs)) +
@@ -812,6 +1037,7 @@ function renderBd() {
       (_bd.retEnabled ? r('Returns Label Cost', '= Avg Shipping', fc(_bd.ship)) : '');
 
     el('bdLeftTitle').textContent = 'Self-Insure Program';
+    el('bdLeftTitle').className = 'bd-title t-neg';
     el('bdLeft').innerHTML =
       r('Protected Orders',  `${fn(_bd.orders)} × ${fpx(_bd.diyAttP * 100)}`,           fn(_bd.diyProt)) +
       r('Avg DIY Premium',   _diyType === 'flat' ? 'flat fee' : `AOV × ${fpx(_bd.diyAvgP/_bd.aov*100)}`, fcc(_bd.diyAvgP)) +
@@ -821,6 +1047,7 @@ function renderBd() {
       r('Net Premium',       'Premiums − Claims',                                        fc(_bd.diyNet));
 
     el('bdRightTitle').textContent = 'ShipInsure Program';
+    el('bdRightTitle').className = 'bd-title t-pos';
     el('bdRight').innerHTML =
       r('Protected Orders',  `${fn(_bd.orders)} × ${fpx(_bd.siAttP * 100)}`,            fn(_bd.siProt)) +
       r('Avg SI Premium',    `AOV × ${fpx(_bd.siAvgP/(_bd.aov||1)*100)}`,               fcc(_bd.siAvgP)) +
@@ -832,24 +1059,54 @@ function renderBd() {
       r('Net Premiums',      'PostClaim + RevShare',                                     fc(_bd.siNet));
 
   } else {
-    el('bdShared').innerHTML =
+    // Mode 2 shared
+    let sharedHtml =
       r('Monthly Orders',    '',                  fn(_bd.mo)) +
       r('AOV',               '',                  fc(_bd.aov)) +
       r('Claims Rate',       '',                  fp(_bd.claimsP * 100)) +
+      r('Total Claims',      'Orders × Rate',     fn(_bd.claimsNum)) +
       r('Avg Shipping',      '',                  fc(_bd.ship)) +
-      r('Funded Per Claim',  'AOV + Ship',        fc(_bd.fundedPer));
+      r('SI Funded Per Claim','AOV + Ship',       fc(_bd.fundedPer));
 
-    el('bdLeftTitle').textContent = _bd.cname + ' Program';
-    el('bdLeft').innerHTML =
-      r('Protected Orders',  `${fn(_bd.orders)} × ${fpx(_bd.compAttP * 100)}`,          fn(_bd.compProt)) +
-      r('Avg Premium',       _compType === 'flat' ? 'flat fee' : `AOV × rate`,           fcc(_bd.compAvgP)) +
-      r('Gross Premiums',    '',                                                          fc(_bd.compPremsIn)) +
-      r('Protected Claims',  '',                                                          fn(_bd.compProtCl)) +
-      r('Funded Claims',     `${fn(_bd.compProtCl)} × ${fc(_bd.fundedPer)}`,             fc(_bd.compFunded)) +
-      r('Net Premium',       'Premiums − Funded',                                        fc(_bd.compPost)) +
-      r('Rev Share',         `max(0,Post) × ${fpx(_bd.compRsP * 100)}`,                 fc(_bd.compRevSh));
+    if (_bd.splitModel) {
+      sharedHtml +=
+        r('COGS %',            '',                            fp(_bd.cogsP * 100)) +
+        r('CS Ticket Cost',    '',                            fc(_bd.cs)) +
+        r('Merchant Claim Cost','AOV×COGS + Ship + CS',      fc(_bd.merchantClaimCostPer)) +
+        r('Merchant Cut / Premium','adjustable input',        fcc(_bd.merchantCutPer)) +
+        r(_bd.cname + ' Keeps / Premium','Premium − Cut',    fcc(_bd.compKeepsPer));
+    } else {
+      sharedHtml += r('Funded Per Claim',  'AOV + Ship',     fc(_bd.fundedPer));
+    }
+    el('bdShared').innerHTML = sharedHtml;
+
+    // Left: Competitor
+    el('bdLeftTitle').textContent = _bd.cname + ' Program' + (_bd.splitModel ? ' (Split Premium)' : '');
+    el('bdLeftTitle').className = 'bd-title ' + (_bd.splitModel ? 't-warn' : 't-neg');
+
+    if (_bd.splitModel) {
+      el('bdLeft').innerHTML =
+        r('Protected Orders',      `${fn(_bd.orders)} × ${fpx(_bd.compAttP * 100)}`,         fn(_bd.compProt)) +
+        r('Avg Premium',           _compType === 'flat' ? 'flat fee' : 'AOV × rate',          fcc(_bd.compAvgP)) +
+        r('Total Premiums Charged','',                                                         fc(_bd.compPremsIn)) +
+        r(_bd.cname + ' Takes',    `${fn(_bd.compProt)} × ${fcc(_bd.compKeepsPer)}`,          fc(_bd.compKeepsTotal)) +
+        r('You Keep',              `${fn(_bd.compProt)} × ${fcc(_bd.merchantCutPer)}`,         fc(_bd.merchantKeepsTotal)) +
+        r('Protected Claims',      `${fn(_bd.compProt)} × ${fp(_bd.claimsP * 100)}`,          fn(_bd.compProtCl)) +
+        r('Your Claims Cost',      `${fn(_bd.compProtCl)} × ${fc(_bd.merchantClaimCostPer)}`, fc(_bd.merchantClaimCost)) +
+        r('Your Net',              'Your Keeps − Claims Cost',                                 fc(_bd.compNet));
+    } else {
+      el('bdLeft').innerHTML =
+        r('Protected Orders',  `${fn(_bd.orders)} × ${fpx(_bd.compAttP * 100)}`,          fn(_bd.compProt)) +
+        r('Avg Premium',       _compType === 'flat' ? 'flat fee' : `AOV × rate`,           fcc(_bd.compAvgP)) +
+        r('Gross Premiums',    '',                                                          fc(_bd.compPremsIn)) +
+        r('Protected Claims',  '',                                                          fn(_bd.compProtCl)) +
+        r('Funded Claims',     `${fn(_bd.compProtCl)} × ${fc(_bd.fundedPer)}`,             fc(_bd.compFunded)) +
+        r('Net Premium',       'Premiums − Funded',                                        fc(_bd.compPost)) +
+        r('Rev Share',         `max(0,Post) × ${fpx(_bd.compRsP * 100)}`,                 fc(_bd.compRevSh));
+    }
 
     el('bdRightTitle').textContent = 'ShipInsure Program';
+    el('bdRightTitle').className = 'bd-title t-pos';
     el('bdRight').innerHTML =
       r('Protected Orders',  `${fn(_bd.orders)} × ${fpx(_bd.siAttP * 100)}`,            fn(_bd.siProt)) +
       r('Avg Premium',       `AOV × ${fpx(_bd.siAvgP/(_bd.aov||1)*100)}`,               fcc(_bd.siAvgP)) +
@@ -869,6 +1126,8 @@ const _PMAP = {
   compName:'cname', compPremRate:'cpp', compAttach:'ca', compRevShare:'crs',
   siPremRateM2:'sipp2', siAttachM2:'sia2', revShareM2:'rs2',
   returnsRate:'rrate', retPlatform:'rplat', compRetPlatform:'crplat',
+  siRetLabel:'sirl', compRetLabel:'crlab',
+  merchantCut:'mcut',
   timeframe:'tf'
 };
 
@@ -877,6 +1136,8 @@ function generateLink() {
   url.searchParams.set('mode', _mode);
   url.searchParams.set('ret',  _retEnabled  ? '1' : '0');
   url.searchParams.set('cret', _cretEnabled ? '1' : '0');
+  url.searchParams.set('split', _splitModel ? '1' : '0');
+  url.searchParams.set('clt',  _claimsType);
   url.searchParams.set('dpt',  _diyType);
   url.searchParams.set('cpt',  _compType);
   Object.entries(_PMAP).forEach(([id, key]) => {
@@ -905,8 +1166,10 @@ function loadSaved() {
   });
   if (p.get('dpt') === 'flat') setDiyType('flat');
   if (p.get('cpt') === 'flat') setCompType('flat');
+  if (p.get('clt') === 'num')  setClaimsType('num');
   if (p.get('ret')  === '1' && !_retEnabled)  toggleReturns();
   if (p.get('cret') === '1' && !_cretEnabled) toggleCompReturns();
+  if (p.get('split') === '1' && !_splitModel) toggleSplitModel();
   syncCompLabels();
   syncReturnsFields();
   recalc();
@@ -916,7 +1179,7 @@ function loadSaved() {
 function resetAll() {
   ['orders','aov','claimsRate','cogsPercent','avgShipping','csCost',
    'diyPremRate','siPremRate','compName','compPremRate','compRevShare',
-   'returnsRate','retPlatform','compRetPlatform'].forEach(id => {
+   'returnsRate','retPlatform','compRetPlatform','siRetLabel','compRetLabel'].forEach(id => {
     const e = el(id); if (e) e.value = '';
   });
   el('diyAttach').value    = '60';
@@ -926,9 +1189,12 @@ function resetAll() {
   el('siPremRateM2').value = '3.00';
   el('siAttachM2').value   = '68';
   el('revShareM2').value   = '35';
+  el('merchantCut').value  = '1.00';
   el('timeframe').value    = 'monthly';
   if (_retEnabled)  toggleReturns();
   if (_cretEnabled) toggleCompReturns();
+  if (_splitModel)  toggleSplitModel();
+  if (_claimsType !== 'pct') setClaimsType('pct');
   if (_diyType  !== 'pct') setDiyType('pct');
   if (_compType !== 'pct') setCompType('pct');
   el('linkRow').classList.remove('visible');
