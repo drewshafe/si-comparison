@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ShipInsure Comparison Calculator</title>
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/drewshafe/si-roi-calculator/main/si_lock.png">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -24,7 +25,7 @@ body {
   gap: 12px; flex-wrap: wrap; justify-content: space-between;
 }
 .logo-area { display:flex; align-items:center; gap:10px; flex-shrink:0; cursor:pointer; user-select:none; }
-.logo-img { height:26px; }
+.logo-img { height:42px; }
 .app-title { font-size:1em; font-weight:700; color:white; white-space:nowrap; }
 .tab-bar { display:flex; gap:3px; background:rgba(0,0,0,0.2); padding:4px; border-radius:8px; flex-shrink:0; }
 .tab-btn {
@@ -200,6 +201,27 @@ body {
   transition:all 0.15s;
 }
 .model-btn.active { background:#dc3545; color:white; }
+/* Cashback + Guarantee toggle buttons */
+.cb-btn {
+  padding:5px 10px; font-size:0.74em; font-weight:700;
+  border:1px solid #d63384; border-radius:6px;
+  background:white; color:#d63384; cursor:pointer;
+  display:flex; align-items:center; gap:4px; white-space:nowrap;
+  transition:all 0.15s;
+}
+.cb-btn.active { background:#d63384; color:white; }
+.gr-btn {
+  padding:5px 10px; font-size:0.74em; font-weight:700;
+  border:1px solid #764ba2; border-radius:6px;
+  background:white; color:#764ba2; cursor:pointer;
+  display:flex; align-items:center; gap:4px; white-space:nowrap;
+  transition:all 0.15s;
+}
+.gr-btn.active { background:#764ba2; color:white; }
+.input-section-label.lbl-pink   { color:#d63384; }
+.input-section-label.lbl-purple { color:#764ba2; }
+.feature-section { display:none; }
+.feature-section.visible { display:block; }
 /* Primary button */
 .btn-gen {
   padding:6px 14px; background:#4a5fc1; color:white;
@@ -274,7 +296,7 @@ body {
   <!-- ── Top strip ── -->
   <div class="top-strip">
     <div class="logo-area" id="logoArea">
-      <img src="https://shipinsure.io/wp-content/uploads/2023/01/SI_Logo_White.svg"
+      <img src="https://raw.githubusercontent.com/drewshafe/si-roi-calculator/main/impactlogo.png"
            class="logo-img" alt="ShipInsure" onerror="this.style.display='none'">
       <div class="app-title">ShipInsure Comparison Calculator</div>
     </div>
@@ -338,6 +360,12 @@ body {
         <button class="cret-btn" id="cretBtn" onclick="toggleCompReturns()">
           <span id="cretIcon">＋</span> <span id="cretBtnLabel">Comp Returns Offset</span>
         </button>
+        <button class="cb-btn" id="cbBtn" onclick="toggleCashback()">
+          <span id="cbIcon">＋</span> Customer Cashback
+        </button>
+        <button class="gr-btn" id="grBtn" onclick="toggleGuarantee()">
+          <span id="grIcon">＋</span> Guarantee
+        </button>
         <button class="btn-gen" onclick="generateLink()">Generate Link</button>
       </div>
     </div>
@@ -368,7 +396,7 @@ body {
           </div>
         </div>
         <div class="ig" id="coreReturnsRateField" style="display:none;"><label for="returnsRate">Returns Rate %</label><input type="text" id="returnsRate" placeholder="0"></div>
-        <div class="ig" id="coreAvgShippingField" style="display:none;"><label for="avgShipping">Avg Shipping</label><input type="text" id="avgShipping" placeholder="$"></div>
+        <div class="ig" id="coreAvgShippingField"><label for="avgShipping">Avg Shipping</label><input type="text" id="avgShipping" placeholder="$"></div>
       </div>
     </div>
 
@@ -380,7 +408,28 @@ body {
           <label for="compName">Competitor</label>
           <input type="text" id="compName" placeholder="Enter name" oninput="syncCompLabels()">
         </div>
-        <div class="ig">
+        <div class="ig" style="max-width:170px;">
+          <label for="compTemplate" id="compTemplateLbl">Comp Pricing</label>
+          <select id="compTemplate">
+            <option value="custom" selected>Custom (enter rate)</option>
+            <option value="born_primitive">Born Primitive</option>
+            <option value="1.5_accurate">1.5% Accurate</option>
+            <option value="2_accurate">2% Accurate</option>
+            <option value="2_round_50">2% Round $50</option>
+            <option value="2.5_accurate">2.5% Accurate</option>
+            <option value="3_accurate">3% Accurate</option>
+            <option value="3.5_accurate">3.5% Accurate</option>
+            <option value="2_flat_0.98">2% Min $0.98</option>
+            <option value="3_accurate_100_1.95">3% Min $1.95</option>
+            <option value="3.25_1.55">3.25% Min $1.55</option>
+            <option value="2.5_1.95">2.5% Min $1.95</option>
+            <option value="og_6.5_19.99_3">OG 6.5/19.99/3%</option>
+            <option value="static_1.50_300_2.00">$1.50 / $2.00</option>
+            <option value="flat_1.50">Flat $1.50</option>
+            <option value="flat_5.95">Flat $5.95</option>
+          </select>
+        </div>
+        <div class="ig" id="compPremField">
           <label id="compPremLbl">Comp Premium %</label>
           <div class="prem-wrap">
             <input type="text" id="compPremRate" placeholder="0">
@@ -389,6 +438,14 @@ body {
           </div>
         </div>
         <div class="ig"><label for="compAttach">Comp Attach %</label><input type="text" id="compAttach" placeholder="50" value="50"></div>
+        <div class="ig" style="max-width:190px;">
+          <label for="compClaimRes" id="compClaimResLbl">Comp Claim Resolution</label>
+          <select id="compClaimRes">
+            <option value="2ndsale" selected>Reship = 2nd Sale</option>
+            <option value="cogs">Reship @ COGS</option>
+            <option value="aovship">AOV + Shipping</option>
+          </select>
+        </div>
         <div class="ig" id="compRetPlatGroup" style="display:none;">
           <label for="compRetPlatform" id="compRetPlatLabel">Comp Returns Portal ($/mo)</label>
           <input type="text" id="compRetPlatform" placeholder="$">
@@ -398,6 +455,13 @@ body {
           <input type="text" id="compRetLabel" placeholder="$">
         </div>
         <div class="ig" id="compRevShareGroup"><label for="compRevShare" id="compRevShareLabel">Comp Rev Share %</label><input type="text" id="compRevShare" placeholder="0" value="0"></div>
+        <div class="ig" id="compRsBasisGroup" style="max-width:150px;">
+          <label for="compRsBasis" id="compRsBasisLbl">Comp Rev Share Basis</label>
+          <select id="compRsBasis">
+            <option value="net" selected>Net (after claims)</option>
+            <option value="gross">Gross (all premiums)</option>
+          </select>
+        </div>
       </div>
       <!-- Split premium inputs — shown when split model is active -->
       <div class="inputs-row" id="splitInputsRow" style="display:none; margin-top:6px;">
@@ -416,8 +480,44 @@ body {
     <div class="input-section">
       <div class="input-section-label">ShipInsure Inputs</div>
       <div class="inputs-row">
-        <div class="ig"><label for="siPremRateM2">SI Premium %</label><input type="text" id="siPremRateM2" placeholder="3.00" value="3.00"></div>
+        <div class="ig" style="max-width:170px;">
+          <label for="siTemplateM2">SI Pricing</label>
+          <select id="siTemplateM2">
+            <option value="custom" selected>Custom (enter rate)</option>
+            <option value="born_primitive">Born Primitive</option>
+            <option value="1.5_accurate">1.5% Accurate</option>
+            <option value="2_accurate">2% Accurate</option>
+            <option value="2_round_50">2% Round $50</option>
+            <option value="2.5_accurate">2.5% Accurate</option>
+            <option value="3_accurate">3% Accurate</option>
+            <option value="3.5_accurate">3.5% Accurate</option>
+            <option value="2_flat_0.98">2% Min $0.98</option>
+            <option value="3_accurate_100_1.95">3% Min $1.95</option>
+            <option value="3.25_1.55">3.25% Min $1.55</option>
+            <option value="2.5_1.95">2.5% Min $1.95</option>
+            <option value="og_6.5_19.99_3">OG 6.5/19.99/3%</option>
+            <option value="static_1.50_300_2.00">$1.50 / $2.00</option>
+            <option value="flat_1.50">Flat $1.50</option>
+            <option value="flat_5.95">Flat $5.95</option>
+          </select>
+        </div>
+        <div class="ig" id="siPremField">
+          <label id="siPremLblM2">SI Premium %</label>
+          <div class="prem-wrap">
+            <input type="text" id="siPremRateM2" placeholder="3.00" value="3.00">
+            <button class="ptype-btn active" id="siPctBtnM2" onclick="setSiPremType('pct')">%</button>
+            <button class="ptype-btn" id="siFlatBtnM2" onclick="setSiPremType('flat')">$</button>
+          </div>
+        </div>
         <div class="ig"><label for="siAttachM2">SI Attach %</label><input type="text" id="siAttachM2" placeholder="68" value="68"></div>
+        <div class="ig" style="max-width:190px;">
+          <label for="siClaimResM2">SI Claim Resolution</label>
+          <select id="siClaimResM2">
+            <option value="2ndsale" selected>Reship = 2nd Sale</option>
+            <option value="cogs">Reship @ COGS</option>
+            <option value="aovship">AOV + Shipping</option>
+          </select>
+        </div>
         <div class="ig" id="siRetPlatGroup" style="display:none;">
           <label for="retPlatform">AfterShip Returns Portal ($/mo)</label>
           <input type="text" id="retPlatform" placeholder="$">
@@ -427,6 +527,31 @@ body {
           <input type="text" id="siRetLabel" placeholder="$">
         </div>
         <div class="ig"><label for="revShareM2">SI Rev Share %</label><input type="text" id="revShareM2" placeholder="35" value="35"></div>
+        <div class="ig" style="max-width:150px;">
+          <label for="siRsBasis">SI Rev Share Basis</label>
+          <select id="siRsBasis">
+            <option value="net" selected>Net (after claims)</option>
+            <option value="gross">Gross (all premiums)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Cashback (toggled) — same program modeled under both sides -->
+    <div class="input-section feature-section" id="cashbackSection">
+      <div class="input-section-label lbl-pink">🎁 Customer Cashback — funded from each program's premium pool</div>
+      <div class="inputs-row">
+        <div class="ig"><label for="cashbackRate">Customer Cashback %</label><input type="text" id="cashbackRate" value="5"></div>
+        <div class="ig"><label for="minCashback">Min Cashback Amount $</label><input type="text" id="minCashback" value="5"></div>
+        <div class="ig"><label for="cashbackRedemptionRate">Est. Redemption Rate %</label><input type="text" id="cashbackRedemptionRate" value="10"></div>
+      </div>
+    </div>
+
+    <!-- Guarantee (toggled) — increased claim rate applied to both sides -->
+    <div class="input-section feature-section" id="guaranteeSection">
+      <div class="input-section-label lbl-purple">✔ Quality / Satisfaction Guarantee — extra claims funded by each program</div>
+      <div class="inputs-row">
+        <div class="ig" style="max-width:280px;"><label for="guaranteeClaimRate">Increased Claim Rate with Guarantee %</label><input type="text" id="guaranteeClaimRate" placeholder="auto (1.5× claims rate)"></div>
       </div>
     </div>
 
@@ -437,7 +562,14 @@ body {
       </button>
       <div id="addlBody" style="display:none;">
         <div class="inputs-row" style="margin-top:4px;">
-          <div class="ig"><label for="cogsPercent">COGS %</label><input type="text" id="cogsPercent" placeholder="0"></div>
+          <div class="ig">
+            <label for="cogsPercent" id="cogsLbl">Product Cost %</label>
+            <div class="prem-wrap">
+              <input type="text" id="cogsPercent" placeholder="0">
+              <button class="ptype-btn active" id="cogsPctBtn" onclick="setCogsType('pct')">%</button>
+              <button class="ptype-btn" id="cogsFlatBtn" onclick="setCogsType('flat')">$</button>
+            </div>
+          </div>
           <div class="ig"><label for="csCost">Avg Ticket Cost</label><input type="text" id="csCost" placeholder="$"></div>
         </div>
       </div>
@@ -481,12 +613,50 @@ body {
 let _mode           = 'm2';
 let _retEnabled     = false;
 let _cretEnabled    = false;
+let _cbEnabled      = false;   // Customer Cashback
+let _grEnabled      = false;   // Quality/Satisfaction Guarantee
 let _splitModel     = false;   // Split Premium model (Redo-style)
 let _mcutType       = 'flat'; // 'flat' | 'pct' — merchant cut input type
 let _claimsType     = 'pct';  // 'pct' | 'num'
+let _cogsType       = 'pct';  // 'pct' | 'flat'
 let _diyType        = 'pct';   // 'pct' | 'flat'
 let _compType       = 'pct';
+let _siPremType     = 'pct';  // 'pct' | 'flat' — SI custom premium type
 let _bd             = {};
+
+// ── Pricing templates (tiered — same tables as the main ROI calculator) ──
+const pricingTemplates = {
+  "1.5_accurate":[{min:1,max:77,premium:0.98},{min:77,max:88,premium:1.23},{min:88,max:100,premium:1.40},{min:100,max:114,premium:1.60},{min:115,max:131,premium:1.83},{min:131,max:150,premium:2.09},{min:150,max:171,premium:2.39},{min:171,max:195,premium:2.74},{min:195,max:223,premium:3.13},{min:223,max:255,premium:3.57},{min:255,max:292,premium:4.08},{min:292,max:333,premium:4.67},{min:333,max:381,premium:5.33},{min:381,max:435,premium:6.10},{min:435,max:498,premium:6.97},{min:498,max:569,premium:7.96},{min:569,max:650,premium:9.10},{min:650,max:743,premium:10.40},{min:743,max:849,premium:11.89},{min:849,max:970,premium:13.59},{min:970,max:1109,premium:15.53},{min:1109,max:1267,premium:17.74},{min:1267,max:1449,premium:20.28},{min:1449,max:1655,premium:23.18},{min:1655,max:1892,premium:26.49},{min:1892,max:2162,premium:30.27},{min:2162,max:2471,premium:34.60},{min:2471,max:2824,premium:39.54},{min:2824,max:3228,premium:45.19},{min:3228,max:3689,premium:51.64},{min:3689,max:4216,premium:59.02},{min:4216,max:10000,premium:67.45}],
+  "2_accurate":[{min:1,max:54,premium:0.98},{min:54,max:60,premium:1.14},{min:60,max:66,premium:1.26},{min:66,max:73,premium:1.39},{min:73,max:81,premium:1.54},{min:81,max:89,premium:1.70},{min:89,max:99,premium:1.88},{min:99,max:109,premium:2.08},{min:109,max:121,premium:2.29},{min:121,max:133,premium:2.54},{min:133,max:148,premium:2.80},{min:148,max:163,premium:3.10},{min:163,max:180,premium:3.43},{min:180,max:199,premium:3.79},{min:199,max:220,premium:4.18},{min:220,max:243,premium:4.63},{min:243,max:269,premium:5.11},{min:269,max:297,premium:5.65},{min:297,max:329,premium:6.25},{min:329,max:363,premium:6.90},{min:363,max:402,premium:7.63},{min:402,max:444,premium:8.43},{min:444,max:491,premium:9.32},{min:491,max:542,premium:10.30},{min:542,max:599,premium:11.39},{min:599,max:662,premium:12.59},{min:662,max:732,premium:13.91},{min:732,max:809,premium:15.38},{min:809,max:894,premium:16.99},{min:894,max:989,premium:18.78},{min:989,max:1093,premium:20.76},{min:1093,max:1208,premium:22.95},{min:1208,max:1335,premium:25.36},{min:1335,max:1475,premium:28.03},{min:1475,max:1631,premium:30.98},{min:1631,max:1802,premium:34.25},{min:1802,max:1992,premium:37.85},{min:1992,max:2202,premium:41.83},{min:2202,max:2434,premium:46.24},{min:2434,max:2690,premium:51.11},{min:2690,max:2973,premium:56.49},{min:2973,max:3286,premium:62.43},{min:3286,max:3632,premium:69.00},{min:3632,max:4014,premium:76.27},{min:4014,max:4437,premium:84.30},{min:4437,max:10000,premium:93.17}],
+  "2_round_50":[{min:1,max:50,premium:1.00},{min:50,max:80,premium:1.50},{min:80,max:110,premium:2.00},{min:110,max:140,premium:2.50},{min:140,max:160,premium:3.00},{min:160,max:180,premium:3.50},{min:180,max:210,premium:4.00},{min:210,max:300,premium:5.00},{min:300,max:400,premium:8.00},{min:400,max:500,premium:10.00},{min:500,max:600,premium:12.00},{min:600,max:700,premium:14.00},{min:700,max:800,premium:16.00},{min:800,max:900,premium:18.00},{min:900,max:10000,premium:20.00}],
+  "2.5_accurate":[{min:1,max:41,premium:0.98},{min:41,max:44,premium:1.06},{min:44,max:48,premium:1.15},{min:48,max:52,premium:1.25},{min:52,max:56,premium:1.35},{min:56,max:61,premium:1.47},{min:61,max:66,premium:1.59},{min:66,max:72,premium:1.72},{min:72,max:78,premium:1.87},{min:78,max:84,premium:2.02},{min:84,max:91,premium:2.19},{min:91,max:99,premium:2.37},{min:99,max:107,premium:2.57},{min:107,max:116,premium:2.79},{min:116,max:126,premium:3.02},{min:126,max:136,premium:3.27},{min:136,max:148,premium:3.54},{min:148,max:160,premium:3.84},{min:160,max:173,premium:4.16},{min:173,max:188,premium:4.51},{min:188,max:203,premium:4.88},{min:203,max:220,premium:5.29},{min:220,max:239,premium:5.73},{min:239,max:259,premium:6.21},{min:259,max:280,premium:6.73},{min:280,max:304,premium:7.29},{min:304,max:329,premium:7.90},{min:329,max:356,premium:8.55},{min:356,max:386,premium:9.27},{min:386,max:418,premium:10.04},{min:418,max:453,premium:10.88},{min:453,max:491,premium:11.78},{min:491,max:532,premium:12.76},{min:532,max:576,premium:13.83},{min:576,max:624,premium:14.98},{min:624,max:676,premium:16.23},{min:676,max:733,premium:17.58},{min:733,max:794,premium:19.05},{min:794,max:860,premium:20.64},{min:860,max:931,premium:22.36},{min:931,max:1009,premium:24.22},{min:1009,max:1093,premium:26.24},{min:1093,max:1184,premium:28.42},{min:1184,max:1283,premium:30.79},{min:1283,max:1390,premium:33.36},{min:1390,max:1506,premium:36.14},{min:1506,max:1631,premium:39.15},{min:1631,max:1767,premium:42.41},{min:1767,max:1915,premium:45.95},{min:1915,max:2074,premium:49.78},{min:2074,max:2247,premium:53.93},{min:2247,max:2434,premium:58.42},{min:2434,max:2637,premium:63.29},{min:2637,max:2857,premium:68.56},{min:2857,max:3095,premium:74.28},{min:3095,max:3353,premium:80.47},{min:3353,max:3632,premium:87.17},{min:3632,max:3935,premium:94.44},{min:3935,max:4263,premium:102.31},{min:4263,max:4618,premium:110.83},{min:4618,max:10000,premium:120.07}],
+  "born_primitive":[{min:1,max:50,premium:2.25},{min:50,max:100,premium:2.75},{min:100,max:150,premium:3.25},{min:150,max:200,premium:3.75},{min:200,max:300,premium:4.95},{min:300,max:500,premium:5.95},{min:500,max:10000,premium:6.95}],
+  "og_6.5_19.99_3":[{min:0,max:310,pct:0.065},{min:310,max:670,premium:19.99},{min:670,max:10000,pct:0.03}],
+  "static_1.50_300_2.00":[{min:1,max:300,premium:1.50},{min:300,max:10000,premium:2.00}],
+  "flat_1.50":[{min:1,max:10000,premium:1.50}],
+  "flat_5.95":[{min:0,max:10000,premium:5.95}],
+  "2_flat_0.98":"USE_PERCENTAGE_2.0_MIN_0.98",
+  "3_accurate":"USE_PERCENTAGE_3.0",
+  "3.5_accurate":"USE_PERCENTAGE_3.5",
+  "3_accurate_100_1.95":"USE_PERCENTAGE_3.0_MIN_1.95",
+  "3.25_1.55":"USE_PERCENTAGE_3.25_MIN_1.55",
+  "2.5_1.95":"USE_PERCENTAGE_2.5_MIN_1.95"
+};
+
+function getTemplatePremium(aov, template) {
+  const tiers = pricingTemplates[template];
+  if (!tiers) return 0;
+  if (typeof tiers === 'string') {
+    const parts = tiers.replace('USE_PERCENTAGE_','').split('_MIN_');
+    const calc = aov * (parseFloat(parts[0]) / 100);
+    return parts.length > 1 ? Math.max(calc, parseFloat(parts[1])) : calc;
+  }
+  for (const t of tiers) {
+    if (aov >= t.min && aov < t.max) return t.pct ? aov * t.pct : t.premium;
+  }
+  const last = tiers[tiers.length-1];
+  return last.pct ? aov * last.pct : last.premium;
+}
 
 // ── Formatters ──
 const fc  = v => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(v);
@@ -513,6 +683,24 @@ function setCompType(t) {
   el('compFlatBtn').classList.toggle('active', t === 'flat');
   syncCompLabels();
   recalc();
+}
+function setSiPremType(t) {
+  _siPremType = t;
+  el('siPctBtnM2').classList.toggle('active', t === 'pct');
+  el('siFlatBtnM2').classList.toggle('active', t === 'flat');
+  el('siPremLblM2').textContent = t === 'flat' ? 'SI Premium $' : 'SI Premium %';
+  recalc();
+}
+function setCogsType(t) {
+  _cogsType = t;
+  el('cogsPctBtn').classList.toggle('active', t === 'pct');
+  el('cogsFlatBtn').classList.toggle('active', t === 'flat');
+  el('cogsLbl').textContent = t === 'flat' ? 'Product Cost $' : 'Product Cost %';
+  recalc();
+}
+function syncTemplateFields() {
+  el('compPremField').style.display = vs('compTemplate') === 'custom' ? '' : 'none';
+  el('siPremField').style.display   = vs('siTemplateM2') === 'custom' ? '' : 'none';
 }
 
 // ── Claims type toggle ──
@@ -565,11 +753,24 @@ function syncReturnsFields() {
   const showCore = _retEnabled || _cretEnabled;
   const show = (id, vis) => { const e = el(id); if (e) e.style.display = vis ? '' : 'none'; };
   show('coreReturnsRateField', showCore);
-  show('coreAvgShippingField', showCore);
   show('siRetPlatGroup',    _retEnabled);
   show('siRetLabelGroup',   _retEnabled);
   show('compRetPlatGroup',  _cretEnabled);
   show('compRetLabelGroup', _cretEnabled);
+}
+function toggleCashback() {
+  _cbEnabled = !_cbEnabled;
+  el('cbBtn').classList.toggle('active', _cbEnabled);
+  el('cbIcon').textContent = _cbEnabled ? '✓' : '＋';
+  el('cashbackSection').classList.toggle('visible', _cbEnabled);
+  recalc();
+}
+function toggleGuarantee() {
+  _grEnabled = !_grEnabled;
+  el('grBtn').classList.toggle('active', _grEnabled);
+  el('grIcon').textContent = _grEnabled ? '✓' : '＋';
+  el('guaranteeSection').classList.toggle('visible', _grEnabled);
+  recalc();
 }
 function syncCompLabels() {
   const cname = vs('compName') || 'Comp';
@@ -581,6 +782,9 @@ function syncCompLabels() {
   if (el('compRevShareLabel'))el('compRevShareLabel').textContent= cname + ' Rev Share %';
   if (el('merchantCutLabel')) el('merchantCutLabel').textContent = 'Your Cut per ' + cname + ' Premium ' + (_mcutType === 'pct' ? '%' : '$');
   if (el('compRetLabelLbl')) el('compRetLabelLbl').textContent = cname + ' Return Label Cost $';
+  if (el('compTemplateLbl')) el('compTemplateLbl').textContent = cname + ' Pricing';
+  if (el('compClaimResLbl')) el('compClaimResLbl').textContent = cname + ' Claim Resolution';
+  if (el('compRsBasisLbl'))  el('compRsBasisLbl').textContent  = cname + ' Rev Share Basis';
 }
 function toggleAddlInputs() {
   const body  = el('addlBody');
@@ -752,13 +956,16 @@ function calcM2() {
 
   const mo          = vn('orders');
   const aov         = vn('aov');
-  const cogsP       = vn('cogsPercent') / 100;
+  const cogsRaw     = vn('cogsPercent');
+  const cogsPerOrder = _cogsType === 'flat' ? cogsRaw : aov * (cogsRaw / 100);
+  const cogsP       = aov > 0 ? cogsPerOrder / aov : 0;
   const ship        = vn('avgShipping');
   const cs          = vn('csCost');
   const compPremRaw = vn('compPremRate');
   const compAttP    = vn('compAttach') / 100;
   const compRsP     = vn('compRevShare') / 100;
-  const siPremP     = vn('siPremRateM2') / 100;
+  const compRsBasis = vs('compRsBasis') || 'net';
+  const siRsBasis   = vs('siRsBasis') || 'net';
   const siAttP      = vn('siAttachM2') / 100;
   const siRsP       = vn('revShareM2') / 100;
 
@@ -767,23 +974,60 @@ function calcM2() {
   const claimsP   = _claimsType === 'num' ? (orders > 0 ? claimsRaw / orders : 0) : claimsRaw / 100;
   const claimsNum = _claimsType === 'num' ? claimsRaw : orders * claimsP;
 
-  const compAvgP = _compType === 'flat' ? compPremRaw : aov * (compPremRaw / 100);
-  const siAvgP   = aov * siPremP;
-  const fundedPer = aov + ship;  // SI funds AOV + shipping
+  // Premiums — pricing template or custom rate per side (per ROI calc)
+  const compTemplate = vs('compTemplate') || 'custom';
+  const siTemplate   = vs('siTemplateM2') || 'custom';
+  const compAvgP = compTemplate !== 'custom'
+    ? getTemplatePremium(aov, compTemplate)
+    : (_compType === 'flat' ? compPremRaw : aov * (compPremRaw / 100));
+  const siAvgP = siTemplate !== 'custom'
+    ? getTemplatePremium(aov, siTemplate)
+    : (_siPremType === 'flat' ? vn('siPremRateM2') : aov * (vn('siPremRateM2') / 100));
+
+  // Claim resolution per side (per ROI calc): 2nd Sale = AOV · COGS = product cost + ship + CS · legacy AOV + Shipping
+  const resVal = r => r === 'cogs' ? cogsPerOrder + ship + cs : r === 'aovship' ? aov + ship : aov;
+  const compClaimRes = vs('compClaimRes') || '2ndsale';
+  const siClaimRes   = vs('siClaimResM2') || '2ndsale';
+  const compResVal = resVal(compClaimRes);
+  const siResVal   = resVal(siClaimRes);
+  const fundedPer  = siResVal;
+
+  // Guarantee — increased claim rate applied to both programs (default 1.5× claims rate)
+  let gClaimsRate = 0, gDelta = 0;
+  if (_grEnabled) {
+    const gRaw = vn('guaranteeClaimRate');
+    gClaimsRate = gRaw > 0 ? gRaw / 100 : claimsP * 1.5;
+    gDelta = Math.max(0, gClaimsRate - claimsP);
+  }
+
+  // Customer Cashback — same program under both sides, funded from each pool
+  let cbPerOrder = 0, cbRedP = 0;
+  if (_cbEnabled) {
+    const cbRate = (vn('cashbackRate') || 5) / 100;
+    const cbMin  = vn('minCashback') || 5;
+    const cbRedRaw = (el('cashbackRedemptionRate')?.value || '').trim();
+    cbRedP = (cbRedRaw === '' ? 10 : vn('cashbackRedemptionRate')) / 100;
+    cbPerOrder = Math.max(aov * cbRate, cbMin);
+  }
 
   // SI program (same regardless of split model)
   const siProt    = orders * siAttP;
   const siPremsIn = siProt * siAvgP;
   const siProtCl  = siProt * claimsP;
-  const siFunded  = siProtCl * fundedPer;
-  const siPost    = siPremsIn - siFunded;
-  const siRevSh   = Math.max(0, siPost) * siRsP;
-  const siNet     = siPost + siRevSh;
+  const siFunded  = siProtCl * siResVal;
+  const siGAddl     = _grEnabled ? siProt * gDelta : 0;
+  const siGFunded   = siGAddl * siResVal;
+  const siCbIssued  = _cbEnabled ? siProt * cbPerOrder : 0;
+  const siCbRedeemed = siCbIssued * cbRedP;
 
   // Competitor program — branching on split model
   const compProt    = orders * compAttP;
   const compPremsIn = compProt * compAvgP;
   const compProtCl  = compProt * claimsP;
+  const compGAddl     = _grEnabled ? compProt * gDelta : 0;
+  const compGFunded   = compGAddl * compResVal;
+  const compCbIssued  = _cbEnabled ? compProt * cbPerOrder : 0;
+  const compCbRedeemed = compCbIssued * cbRedP;
 
   let compNet, compFunded, compPost, compRevSh;
   // Split model variables
@@ -794,27 +1038,32 @@ function calcM2() {
     // ── SPLIT PREMIUM MODEL (Redo-style) ──
     // Competitor keeps (avgPremium - merchantCut) per protected order
     // Merchant gets merchantCut per protected order to self-fund claims
-    merchantCutPer     = vn('merchantCut');
+    const mcutRaw      = vn('merchantCut');
+    merchantCutPer     = _mcutType === 'pct' ? compAvgP * (mcutRaw / 100) : mcutRaw;
     compKeepsPer       = Math.max(0, compAvgP - merchantCutPer);
     merchantKeepsTotal = compProt * merchantCutPer;
     compKeepsTotal     = compProt * compKeepsPer;
 
-    // Merchant self-funds claims: COGS + shipping + CS per claim
-    merchantClaimCostPer = (aov * cogsP) + ship + cs;
+    // Merchant self-funds claims at the selected resolution (plus guarantee + cashback if enabled)
+    merchantClaimCostPer = compResVal;
     merchantClaimCost    = compProtCl * merchantClaimCostPer;
 
-    // Merchant net = what they keep from premiums minus what they pay for claims
-    compNet    = merchantKeepsTotal - merchantClaimCost;
+    // Merchant net = what they keep from premiums minus what they pay for claims & programs
+    compNet    = merchantKeepsTotal - merchantClaimCost - compGFunded - compCbRedeemed;
     compFunded = 0;  // competitor doesn't fund claims
     compPost   = 0;
     compRevSh  = 0;
   } else {
     // ── STANDARD MODEL ──
-    compFunded  = compProtCl * fundedPer;
-    compPost    = compPremsIn - compFunded;
-    compRevSh   = Math.max(0, compPost) * compRsP;
+    compFunded  = compProtCl * compResVal;
+    compPost    = compPremsIn - compFunded - compGFunded - compCbRedeemed;
+    compRevSh   = (compRsBasis === 'gross' ? compPremsIn : Math.max(0, compPost)) * compRsP;
     compNet     = compPost + compRevSh;
   }
+
+  const siPost  = siPremsIn - siFunded - siGFunded - siCbRedeemed;
+  const siRevSh = (siRsBasis === 'gross' ? siPremsIn : Math.max(0, siPost)) * siRsP;
+  const siNet   = siPost + siRevSh;
 
   // Returns
   let siRetOff = 0, compRetOff = 0;
@@ -928,6 +1177,7 @@ function calcM2() {
       mi('Net Returns Offset', fc(compRetOff), compRetOff >= 0 ? 'pos' : 'neg');
   }
 
+  const resLbl = r => r === 'cogs' ? 'COGS+Ship+CS' : r === 'aovship' ? 'AOV+Ship' : 'full AOV';
   if (_splitModel) {
     el('lcRows').innerHTML =
       mi('Customer Pays (Premium)',           fcc(compAvgP)) +
@@ -936,16 +1186,20 @@ function calcM2() {
       mi('Your Premium Revenue',               fc(merchantKeepsTotal)) +
       mi(cname + ' Takes Home',               fc(compKeepsTotal), 'neg') +
       mi('Protected Claims',                   fn(compProtCl)) +
-      mi('Your Claims Cost (COGS+Ship+CS)',   fc(merchantClaimCost), 'neg') +
+      mi(`Your Claims Cost (${resLbl(compClaimRes)})`, fc(merchantClaimCost), 'neg') +
+      (_grEnabled ? mi(`Guarantee Claims (+${fn(compGAddl)}) — You Pay`, fc(compGFunded), 'neg') : '') +
+      (_cbEnabled ? mi('Cashback Redeemed — You Pay', fc(compCbRedeemed), 'neg') : '') +
       mi('Your Net (Premium − Claims)',        fc(compNet), compNet >= 0 ? 'pos' : 'neg') +
       compRetRows;
   } else {
     el('lcRows').innerHTML =
       mi('Gross Premiums',   fc(compPremsIn)) +
       mi('Protected Claims', fn(compProtCl)) +
-      mi('Funded Claims',    fc(compFunded), 'neg') +
+      mi(`Funded Claims (${resLbl(compClaimRes)})`, fc(compFunded), 'neg') +
+      (_grEnabled ? mi(`Guarantee Claims Funded (+${fn(compGAddl)})`, fc(compGFunded), 'neg') : '') +
+      (_cbEnabled ? mi('Cashback Funded from Pool', fc(compCbRedeemed), 'neg') : '') +
       mi('Net Premium',      fc(compPost)) +
-      mi('Rev Share',        fc(compRevSh), 'pos') +
+      mi(`Rev Share (${compRsBasis})`, fc(compRevSh), 'pos') +
       compRetRows;
   }
 
@@ -970,9 +1224,11 @@ function calcM2() {
   el('rcRows').innerHTML =
     mi('Gross Premiums',   fc(siPremsIn)) +
     mi('Protected Claims', fn(siProtCl)) +
-    mi('SI Funded Claims', fc(siFunded),  'neg') +
+    mi(`SI Funded Claims (${resLbl(siClaimRes)})`, fc(siFunded),  'neg') +
+    (_grEnabled ? mi(`Guarantee Claims Funded (+${fn(siGAddl)})`, fc(siGFunded), 'neg') : '') +
+    (_cbEnabled ? mi('Cashback Funded by SI', fc(siCbRedeemed), 'neg') : '') +
     mi('Net Premiums',     fc(siPost)) +
-    mi('Rev Share',        fc(siRevSh),   'pos') +
+    mi(`Rev Share (${siRsBasis})`, fc(siRevSh),   'pos') +
     siRetRows;
 
   // ── Split Premium Callout ──
@@ -990,14 +1246,14 @@ function calcM2() {
       (merchantClaimCost > merchantKeepsTotal
         ? `<br><br><strong>You're underwater by ${fc(merchantClaimCost - merchantKeepsTotal)}.</strong> ${cname} collects ${fc(compKeepsTotal)} risk-free while you absorb the loss.`
         : `<br><br>You net ${fc(merchantKeepsTotal - merchantClaimCost)} — but ${cname} takes home ${fc(compKeepsTotal)} risk-free for doing nothing on claims.`) +
-      `<br><br><strong>With ShipInsure:</strong> SI funds claims at full AOV + shipping (${fc(fundedPer)}/claim), ` +
+      `<br><br><strong>With ShipInsure:</strong> SI funds claims at ${resLbl(siClaimRes)} (${fc(siResVal)}/claim), ` +
       `you earn ${fc(siRevSh)} in rev share, and you never touch a claim.`;
   } else {
     el('splitCallout').style.display = 'none';
   }
 
   _bd = {
-    mode:'m2', isAnn, mul, mo, orders, aov, claimsP, claimsNum, cogsP, ship, cs, fundedPer, cname,
+    mode:'m2', isAnn, mul, mo, orders, aov, claimsP, claimsNum, cogsP, cogsPerOrder, ship, cs, fundedPer, cname,
     compAvgP, compAttP, compProt, compPremsIn, compProtCl, compFunded, compPost, compRevSh, compNet, compRsP,
     siAvgP, siAttP, siProt, siPremsIn, siProtCl, siFunded, siPost, siRevSh, siNet, siRsP,
     advantage, retEnabled:_retEnabled, cretEnabled:_cretEnabled,
@@ -1005,6 +1261,9 @@ function calcM2() {
     splitModel:_splitModel, merchantCutPer, compKeepsPer, merchantKeepsTotal, compKeepsTotal,
     merchantClaimCost, merchantClaimCostPer,
     siLabelCost, compLabelCost, siNonOptRet, compNonOptRet, siNonOptLabCost, compNonOptLabCost,
+    compTemplate, siTemplate, compClaimRes, siClaimRes, compResVal, siResVal, compRsBasis, siRsBasis,
+    grEnabled:_grEnabled, gClaimsRate, siGAddl, siGFunded, compGAddl, compGFunded,
+    cbEnabled:_cbEnabled, cbPerOrder, siCbIssued, siCbRedeemed, compCbIssued, compCbRedeemed,
     ready:true
   };
 }
@@ -1060,23 +1319,25 @@ function renderBd() {
 
   } else {
     // Mode 2 shared
+    const resEq = rr => rr === 'cogs' ? 'COGS + Ship + CS' : rr === 'aovship' ? 'AOV + Ship' : 'AOV (2nd Sale)';
     let sharedHtml =
       r('Monthly Orders',    '',                  fn(_bd.mo)) +
       r('AOV',               '',                  fc(_bd.aov)) +
       r('Claims Rate',       '',                  fp(_bd.claimsP * 100)) +
       r('Total Claims',      'Orders × Rate',     fn(_bd.claimsNum)) +
       r('Avg Shipping',      '',                  fc(_bd.ship)) +
-      r('SI Funded Per Claim','AOV + Ship',       fc(_bd.fundedPer));
+      r('Product Cost / Order','',                fcc(_bd.cogsPerOrder)) +
+      r(_bd.cname + ' Claim Value', resEq(_bd.compClaimRes), fc(_bd.compResVal)) +
+      r('SI Claim Value',    resEq(_bd.siClaimRes),          fc(_bd.siResVal));
 
+    if (_bd.grEnabled) sharedHtml += r('Guarantee Claim Rate', 'applies to both sides', fp(_bd.gClaimsRate * 100));
+    if (_bd.cbEnabled) sharedHtml += r('Cashback / Order', 'max(AOV × rate, min)', fcc(_bd.cbPerOrder));
     if (_bd.splitModel) {
       sharedHtml +=
-        r('COGS %',            '',                            fp(_bd.cogsP * 100)) +
         r('CS Ticket Cost',    '',                            fc(_bd.cs)) +
-        r('Merchant Claim Cost','AOV×COGS + Ship + CS',      fc(_bd.merchantClaimCostPer)) +
+        r('Merchant Claim Cost', resEq(_bd.compClaimRes),     fc(_bd.merchantClaimCostPer)) +
         r('Merchant Cut / Premium','adjustable input',        fcc(_bd.merchantCutPer)) +
         r(_bd.cname + ' Keeps / Premium','Premium − Cut',    fcc(_bd.compKeepsPer));
-    } else {
-      sharedHtml += r('Funded Per Claim',  'AOV + Ship',     fc(_bd.fundedPer));
     }
     el('bdShared').innerHTML = sharedHtml;
 
@@ -1084,37 +1345,45 @@ function renderBd() {
     el('bdLeftTitle').textContent = _bd.cname + ' Program' + (_bd.splitModel ? ' (Split Premium)' : '');
     el('bdLeftTitle').className = 'bd-title ' + (_bd.splitModel ? 't-warn' : 't-neg');
 
+    const compPremEq = _bd.compTemplate !== 'custom' ? 'template @ AOV' : (_compType === 'flat' ? 'flat fee' : 'AOV × rate');
+    const siPremEq   = _bd.siTemplate   !== 'custom' ? 'template @ AOV' : (_siPremType === 'flat' ? 'flat fee' : `AOV × ${fpx(_bd.siAvgP/(_bd.aov||1)*100)}`);
     if (_bd.splitModel) {
       el('bdLeft').innerHTML =
         r('Protected Orders',      `${fn(_bd.orders)} × ${fpx(_bd.compAttP * 100)}`,         fn(_bd.compProt)) +
-        r('Avg Premium',           _compType === 'flat' ? 'flat fee' : 'AOV × rate',          fcc(_bd.compAvgP)) +
+        r('Avg Premium',           compPremEq,                                                fcc(_bd.compAvgP)) +
         r('Total Premiums Charged','',                                                         fc(_bd.compPremsIn)) +
         r(_bd.cname + ' Takes',    `${fn(_bd.compProt)} × ${fcc(_bd.compKeepsPer)}`,          fc(_bd.compKeepsTotal)) +
         r('You Keep',              `${fn(_bd.compProt)} × ${fcc(_bd.merchantCutPer)}`,         fc(_bd.merchantKeepsTotal)) +
         r('Protected Claims',      `${fn(_bd.compProt)} × ${fp(_bd.claimsP * 100)}`,          fn(_bd.compProtCl)) +
         r('Your Claims Cost',      `${fn(_bd.compProtCl)} × ${fc(_bd.merchantClaimCostPer)}`, fc(_bd.merchantClaimCost)) +
-        r('Your Net',              'Your Keeps − Claims Cost',                                 fc(_bd.compNet));
+        (_bd.grEnabled ? r('Guarantee Claims — You Pay', `${fn(_bd.compGAddl)} × ${fc(_bd.compResVal)}`, fc(_bd.compGFunded)) : '') +
+        (_bd.cbEnabled ? r('Cashback Redeemed — You Pay', `${fc(_bd.compCbIssued)} × redemption`, fc(_bd.compCbRedeemed)) : '') +
+        r('Your Net',              'Your Keeps − Claims & Programs',                           fc(_bd.compNet));
     } else {
       el('bdLeft').innerHTML =
         r('Protected Orders',  `${fn(_bd.orders)} × ${fpx(_bd.compAttP * 100)}`,          fn(_bd.compProt)) +
-        r('Avg Premium',       _compType === 'flat' ? 'flat fee' : `AOV × rate`,           fcc(_bd.compAvgP)) +
+        r('Avg Premium',       compPremEq,                                                  fcc(_bd.compAvgP)) +
         r('Gross Premiums',    '',                                                          fc(_bd.compPremsIn)) +
         r('Protected Claims',  '',                                                          fn(_bd.compProtCl)) +
-        r('Funded Claims',     `${fn(_bd.compProtCl)} × ${fc(_bd.fundedPer)}`,             fc(_bd.compFunded)) +
-        r('Net Premium',       'Premiums − Funded',                                        fc(_bd.compPost)) +
-        r('Rev Share',         `max(0,Post) × ${fpx(_bd.compRsP * 100)}`,                 fc(_bd.compRevSh));
+        r('Funded Claims',     `${fn(_bd.compProtCl)} × ${fc(_bd.compResVal)}`,            fc(_bd.compFunded)) +
+        (_bd.grEnabled ? r('Guarantee Claims Funded', `${fn(_bd.compGAddl)} × ${fc(_bd.compResVal)}`, fc(_bd.compGFunded)) : '') +
+        (_bd.cbEnabled ? r('Cashback Funded from Pool', `${fc(_bd.compCbIssued)} × redemption`, fc(_bd.compCbRedeemed)) : '') +
+        r('Net Premium',       'Premiums − Funded & Programs',                             fc(_bd.compPost)) +
+        r('Rev Share',         `${_bd.compRsBasis === 'gross' ? 'Gross' : 'max(0,Post)'} × ${fpx(_bd.compRsP * 100)}`, fc(_bd.compRevSh));
     }
 
     el('bdRightTitle').textContent = 'ShipInsure Program';
     el('bdRightTitle').className = 'bd-title t-pos';
     el('bdRight').innerHTML =
       r('Protected Orders',  `${fn(_bd.orders)} × ${fpx(_bd.siAttP * 100)}`,            fn(_bd.siProt)) +
-      r('Avg Premium',       `AOV × ${fpx(_bd.siAvgP/(_bd.aov||1)*100)}`,               fcc(_bd.siAvgP)) +
+      r('Avg Premium',       siPremEq,                                                    fcc(_bd.siAvgP)) +
       r('Gross Premiums',    '',                                                          fc(_bd.siPremsIn)) +
       r('Protected Claims',  '',                                                          fn(_bd.siProtCl)) +
-      r('SI Funded Claims',  `${fn(_bd.siProtCl)} × ${fc(_bd.fundedPer)}`,              fc(_bd.siFunded)) +
-      r('Net Premiums',      'Premiums − Funded',                                        fc(_bd.siPost)) +
-      r('Rev Share',         `max(0,Post) × ${fpx(_bd.siRsP * 100)}`,                   fc(_bd.siRevSh));
+      r('SI Funded Claims',  `${fn(_bd.siProtCl)} × ${fc(_bd.siResVal)}`,               fc(_bd.siFunded)) +
+      (_bd.grEnabled ? r('Guarantee Claims Funded', `${fn(_bd.siGAddl)} × ${fc(_bd.siResVal)}`, fc(_bd.siGFunded)) : '') +
+      (_bd.cbEnabled ? r('Cashback Funded by SI', `${fc(_bd.siCbIssued)} × redemption`, fc(_bd.siCbRedeemed)) : '') +
+      r('Net Premiums',      'Premiums − Funded & Programs',                             fc(_bd.siPost)) +
+      r('Rev Share',         `${_bd.siRsBasis === 'gross' ? 'Gross' : 'max(0,Post)'} × ${fpx(_bd.siRsP * 100)}`, fc(_bd.siRevSh));
   }
 }
 
@@ -1125,6 +1394,11 @@ const _PMAP = {
   diyPremRate:'spp', diyAttach:'sa', siPremRate:'sipp', siAttach:'sia', revShare:'rs',
   compName:'cname', compPremRate:'cpp', compAttach:'ca', compRevShare:'crs',
   siPremRateM2:'sipp2', siAttachM2:'sia2', revShareM2:'rs2',
+  compTemplate:'ctm', siTemplateM2:'sitm2',
+  compClaimRes:'ccr', siClaimResM2:'sicr2',
+  compRsBasis:'crb', siRsBasis:'srb',
+  cashbackRate:'cbr', minCashback:'cbm', cashbackRedemptionRate:'cbrr',
+  guaranteeClaimRate:'gcr',
   returnsRate:'rrate', retPlatform:'rplat', compRetPlatform:'crplat',
   siRetLabel:'sirl', compRetLabel:'crlab',
   merchantCut:'mcut',
@@ -1140,6 +1414,10 @@ function generateLink() {
   url.searchParams.set('clt',  _claimsType);
   url.searchParams.set('dpt',  _diyType);
   url.searchParams.set('cpt',  _compType);
+  url.searchParams.set('spt',  _siPremType);
+  url.searchParams.set('cgt',  _cogsType);
+  url.searchParams.set('cben', _cbEnabled ? '1' : '0');
+  url.searchParams.set('gen',  _grEnabled ? '1' : '0');
   Object.entries(_PMAP).forEach(([id, key]) => {
     const e = el(id);
     if (e) url.searchParams.set(key, e.value);
@@ -1166,12 +1444,17 @@ function loadSaved() {
   });
   if (p.get('dpt') === 'flat') setDiyType('flat');
   if (p.get('cpt') === 'flat') setCompType('flat');
+  if (p.get('spt') === 'flat') setSiPremType('flat');
+  if (p.get('cgt') === 'flat') setCogsType('flat');
   if (p.get('clt') === 'num')  setClaimsType('num');
   if (p.get('ret')  === '1' && !_retEnabled)  toggleReturns();
   if (p.get('cret') === '1' && !_cretEnabled) toggleCompReturns();
+  if (p.get('cben') === '1' && !_cbEnabled)   toggleCashback();
+  if (p.get('gen')  === '1' && !_grEnabled)   toggleGuarantee();
   if (p.get('split') === '1' && !_splitModel) toggleSplitModel();
   syncCompLabels();
   syncReturnsFields();
+  syncTemplateFields();
   recalc();
 }
 
@@ -1179,7 +1462,8 @@ function loadSaved() {
 function resetAll() {
   ['orders','aov','claimsRate','cogsPercent','avgShipping','csCost',
    'diyPremRate','siPremRate','compName','compPremRate','compRevShare',
-   'returnsRate','retPlatform','compRetPlatform','siRetLabel','compRetLabel'].forEach(id => {
+   'returnsRate','retPlatform','compRetPlatform','siRetLabel','compRetLabel',
+   'guaranteeClaimRate'].forEach(id => {
     const e = el(id); if (e) e.value = '';
   });
   el('diyAttach').value    = '60';
@@ -1191,21 +1475,36 @@ function resetAll() {
   el('revShareM2').value   = '35';
   el('merchantCut').value  = '1.00';
   el('timeframe').value    = 'monthly';
+  el('compTemplate').value = 'custom';
+  el('siTemplateM2').value = 'custom';
+  el('compClaimRes').value = '2ndsale';
+  el('siClaimResM2').value = '2ndsale';
+  el('compRsBasis').value  = 'net';
+  el('siRsBasis').value    = 'net';
+  el('cashbackRate').value = '5';
+  el('minCashback').value  = '5';
+  el('cashbackRedemptionRate').value = '10';
   if (_retEnabled)  toggleReturns();
   if (_cretEnabled) toggleCompReturns();
+  if (_cbEnabled)   toggleCashback();
+  if (_grEnabled)   toggleGuarantee();
   if (_splitModel)  toggleSplitModel();
   if (_claimsType !== 'pct') setClaimsType('pct');
+  if (_cogsType !== 'pct') setCogsType('pct');
   if (_diyType  !== 'pct') setDiyType('pct');
   if (_compType !== 'pct') setCompType('pct');
+  if (_siPremType !== 'pct') setSiPremType('pct');
   el('linkRow').classList.remove('visible');
   syncCompLabels();
   syncReturnsFields();
+  syncTemplateFields();
   setMode('m2');
 }
 
 // ── Init ──
 document.querySelectorAll('input[type="text"]').forEach(e => e.addEventListener('input', recalc));
 document.querySelectorAll('select').forEach(e => e.addEventListener('change', recalc));
+['compTemplate','siTemplateM2'].forEach(id => el(id).addEventListener('change', syncTemplateFields));
 el('logoArea').addEventListener('click', resetAll);
 
 loadSaved();
